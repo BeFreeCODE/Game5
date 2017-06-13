@@ -19,16 +19,22 @@ public class TouchManager : MonoBehaviour
         dragVec = startVec;
 
         //마우스 위치와 현재 플레이어 위치 차이 값
-        moveVec = new Vector2(startVec.x - player.transform.position.x,
-                                startVec.y - player.transform.position.y);
+        moveVec = new Vector2(startVec.x - player.transform.position.x * 2,
+                                startVec.y - player.transform.position.y * 2);
     }
 
     private void OnMouseDrag()
     {
         if (startVec != dragVec)
         {
+            startVec = dragVec;
+            
             //Drag 시작
             isDrag = true;
+        }
+        else
+        {
+            isDrag = false;
         }
 
         //드래그 위치 업데이트
@@ -40,7 +46,7 @@ public class TouchManager : MonoBehaviour
             //Mathf.Clamp(min, max 지정)
             player.transform.position = new Vector3(Mathf.Clamp(dragVec.x - moveVec.x, -5.2f, 5.2f),
                                                      Mathf.Clamp(dragVec.y - moveVec.y, -9.2f, 9.2f),
-                                                 0f);
+                                                 0f) * 0.5f;
         }
     }
 
@@ -48,5 +54,17 @@ public class TouchManager : MonoBehaviour
     {
         //드래그 종료
         isDrag = false;
+    }
+
+    private void Update()
+    {
+        if(isDrag)
+        {
+            GameManager.instance.SetTimeScale(1);
+        }
+        else
+        {
+            GameManager.instance.SetTimeScale(0);
+        }
     }
 }

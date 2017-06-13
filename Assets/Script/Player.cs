@@ -3,7 +3,35 @@ using System.Collections;
 
 public class Player : MonoBehaviour
 {
+    [SerializeField]
+    private BulletManager bulletManager;
 
+    private float bulletDelayTime = 1f;
+    private float curTime = 0f;
+
+    public int dirNum = 1;
+
+    public Vector3 fireDirection;
+
+    private void Start()
+    {
+        //게임시작 시 총알생성
+        bulletManager.MakeBullets();
+
+        fireDirection = Vector3.up;
+    }
+
+    private void Update()
+    {
+        curTime += Time.deltaTime;
+
+        if(curTime >= bulletDelayTime)
+        {
+            bulletManager.FireBullets(this.transform.position);
+
+            curTime = 0f;
+        }
+    }
 
     //충돌
     private void OnTriggerEnter(Collider other)
@@ -11,7 +39,8 @@ public class Player : MonoBehaviour
         //방향전환 아이템.
         if (other.transform.tag.Equals("DirItem"))
         {
-            int dirNum = other.GetComponent<DirItem>().DIRNUM;
+            this.dirNum = other.GetComponent<DirItem>().DIRNUM;
+
             SetPlayerDirection(dirNum);
 
             other.gameObject.SetActive(false);
@@ -21,39 +50,40 @@ public class Player : MonoBehaviour
     //플레이어 방향 전환
     private void SetPlayerDirection(int _dirNum)
     {
-        Vector3 newDirection = Vector3.zero;
-
         switch (_dirNum)
         {
             case 1:
-                newDirection = this.transform.position + Vector3.up;
+                fireDirection = this.transform.position + Vector3.up;
                 break;
             case 2:
-                newDirection = this.transform.position + Vector3.up + Vector3.left;
+                fireDirection = this.transform.position + Vector3.up + Vector3.left;
                 break;
             case 3:
-                newDirection = this.transform.position + Vector3.left;
+                fireDirection = this.transform.position + Vector3.left;
                 break;
             case 4:
-                newDirection = this.transform.position + Vector3.left + Vector3.down;
+                fireDirection = this.transform.position + Vector3.left + Vector3.down;
                 break;
             case 5:
-                newDirection = this.transform.position + Vector3.down;
+                fireDirection = this.transform.position + Vector3.down;
                 break;
             case 6:
-                newDirection = this.transform.position + Vector3.down + Vector3.right;
+                fireDirection = this.transform.position + Vector3.down + Vector3.right;
                 break;
             case 7:
-                newDirection = this.transform.position + Vector3.right;
+                fireDirection = this.transform.position + Vector3.right;
                 break;
             case 8:
-                newDirection = this.transform.position + Vector3.up + Vector3.right;
+                fireDirection = this.transform.position + Vector3.up + Vector3.right;
                 break;
         }
 
-        if (newDirection != Vector3.zero)
+        if (fireDirection != Vector3.zero)
         {
-            this.transform.LookAt(newDirection);
+            //플레이어 바라보는 방향 전환
+            this.transform.LookAt(fireDirection);
         }
     }
+
+
 }
