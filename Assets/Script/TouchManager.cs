@@ -40,7 +40,7 @@ public class TouchManager : MonoBehaviour
             //Mathf.Clamp(min, max 지정)
             player.transform.position = new Vector3(Mathf.Clamp(dragVec.x - moveVec.x, -5.2f, 5.2f),
                                                      Mathf.Clamp(dragVec.y - moveVec.y, -9.2f, 9.2f),
-                                                     0f);
+                                                 0f);
         }
     }
 
