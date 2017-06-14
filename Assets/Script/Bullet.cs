@@ -8,7 +8,7 @@ public class Bullet : MonoBehaviour {
     private Vector2 fireDirection = Vector2.up;
 
     //발사속도
-    private float bulletSpeed = 3f;
+    private float bulletSpeed = 6f;
 
 	void Update ()
     {
@@ -18,11 +18,13 @@ public class Bullet : MonoBehaviour {
         }
 	}
 
+    //발사
     private void FireBullet()
     {
         this.transform.Translate(fireDirection.normalized * Time.deltaTime * bulletSpeed, Space.Self);
     }
 
+    //총알 발사방향
     public void SetFireDirection(int _num)
     {
         switch (_num)

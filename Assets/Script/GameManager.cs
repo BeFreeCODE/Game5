@@ -8,7 +8,8 @@ public enum GameState
     over
 }
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
     public static GameManager instance;
 
     public GameState curGameState = GameState.main;
@@ -23,6 +24,9 @@ public class GameManager : MonoBehaviour {
     {
         //게임시작 시 시간정지
         SetTimeScale(0f);
+
+        //Enemy생성
+        EnemyManager.instance.MakeObjs();
     }
 
     private void Update()
@@ -32,17 +36,19 @@ public class GameManager : MonoBehaviour {
 
     private void Game()
     {
-        switch(curGameState)
+        switch (curGameState)
         {
             case GameState.main:
                 break;
             case GameState.game:
+                EnemyManager.instance.RendEnemy();
                 break;
             case GameState.over:
                 break;
         }
     }
 
+    //시간조정
     public void SetTimeScale(float _scale)
     {
         Time.timeScale = _scale;

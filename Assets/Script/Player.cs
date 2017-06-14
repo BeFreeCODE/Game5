@@ -3,29 +3,42 @@ using System.Collections;
 
 public class Player : MonoBehaviour
 {
+    //플레이어에서 총을 관리함.
     [SerializeField]
     private BulletManager bulletManager;
 
-    private float bulletDelayTime = 1f;
+    //발사 딜레이
+    private float bulletDelayTime = .2f;
     private float curTime = 0f;
 
+    //방향지정 숫자
     public int dirNum = 1;
 
+    //방향 vector
     public Vector3 fireDirection;
 
     private void Start()
     {
         //게임시작 시 총알생성
-        bulletManager.MakeBullets();
+        bulletManager.MakeObjs();
 
         fireDirection = Vector3.up;
     }
 
     private void Update()
     {
+        if (GameManager.instance.curGameState == GameState.game)
+        {
+            PlayerFired();
+        }
+    }
+
+    //발사
+    private void PlayerFired()
+    {
         curTime += Time.deltaTime;
 
-        if(curTime >= bulletDelayTime)
+        if (curTime >= bulletDelayTime)
         {
             bulletManager.FireBullets(this.transform.position);
 
@@ -84,6 +97,4 @@ public class Player : MonoBehaviour
             this.transform.LookAt(fireDirection);
         }
     }
-
-
 }

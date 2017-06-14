@@ -4,6 +4,8 @@ using System.Collections;
 public class TouchManager : MonoBehaviour
 {
     [SerializeField]
+    private SmoothCamera cam;
+    [SerializeField]
     private GameObject player;
 
     private Vector2 startVec;
@@ -44,9 +46,9 @@ public class TouchManager : MonoBehaviour
         {
             //moveVec 차이값만큼 간격을 두고 이동.
             //Mathf.Clamp(min, max 지정)
-            player.transform.position = new Vector3(Mathf.Clamp(dragVec.x - moveVec.x, -5.2f, 5.2f),
-                                                     Mathf.Clamp(dragVec.y - moveVec.y, -9.2f, 9.2f),
-                                                 0f) * 0.5f;
+            player.transform.position = new Vector3(dragVec.x - moveVec.x,
+                                                     dragVec.y - moveVec.y,
+                                                        0f) * 0.5f;
         }
     }
 
@@ -58,7 +60,9 @@ public class TouchManager : MonoBehaviour
 
     private void Update()
     {
-        if(isDrag)
+        cam.ZoomCamera(isDrag);
+
+        if (isDrag)
         {
             GameManager.instance.SetTimeScale(1);
         }
