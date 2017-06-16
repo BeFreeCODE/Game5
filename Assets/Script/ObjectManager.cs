@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Object : MonoBehaviour
+public class ObjectManager : MonoBehaviour
 {
     //생성할 프리팹 오브젝트
     public GameObject makeObj;
@@ -41,13 +41,12 @@ public class Object : MonoBehaviour
         return null;
     }
 
-    //오브젝트 전체 지우기
-    public void DestroObjs()
+    //오브젝트 전체 초기화
+    public virtual void InitObjs()
     {
-        foreach (GameObject _obj in objList)
+        foreach(GameObject _obj in objList)
         {
-            Destroy(_obj);  
+            _obj.SetActive(false);
         }
-        objList.Clear();
     }
 }

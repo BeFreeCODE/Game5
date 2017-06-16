@@ -1,8 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BulletManager : Object
+public class BulletManager : ObjectManager
 {
+    public static BulletManager instance;
+
+    private void Awake()
+    {
+        if (instance == null)
+            instance = this;
+    }
+
     //총알 발사.
     public void FireBullets(Vector3 _pos)
     {

@@ -5,16 +5,24 @@ public class Bullet : MonoBehaviour {
 
     public bool isFire = false;
 
+    [SerializeField]
     private Vector2 fireDirection = Vector2.up;
 
     //발사속도
     private float bulletSpeed = 6f;
+    
 
 	void Update ()
     {
 	    if(isFire)
         {
             FireBullet();
+            
+            //거리가 10이상이면 꺼줌
+            if(DistanceToPlayer() >= 10f)
+            {
+                this.gameObject.SetActive(false);
+            }
         }
 	}
 
@@ -22,6 +30,16 @@ public class Bullet : MonoBehaviour {
     private void FireBullet()
     {
         this.transform.Translate(fireDirection.normalized * Time.deltaTime * bulletSpeed, Space.Self);
+    }
+
+
+    //플레리어와 거리
+    private float DistanceToPlayer()
+    {
+        Vector3 playerPos = GameManager.instance.player.transform.position;
+        Vector3 myPos = this.transform.position;
+
+        return Vector3.Distance(myPos, playerPos);      
     }
 
     //총알 발사방향
