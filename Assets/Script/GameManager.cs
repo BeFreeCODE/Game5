@@ -44,28 +44,6 @@ public class GameManager : MonoBehaviour
         DataManager.Instance.SetData();
     }
 
-    private void Game()
-    {
-        switch (curGameState)
-        {
-            case GameState.main:
-                overState = false;
-                break;
-            case GameState.game:
-                EnemyManager.instance.RendEnemy();
-                ItemManager.instance.RendItem();
-                break;
-            case GameState.over:
-                if(!overState)
-                {
-                    InitGame();
-                    DataManager.Instance.SetData();
-                    overState = true;
-                }
-                break;
-        }
-    }
-
     //게임 초기세팅
     public void InitGame()
     {
@@ -80,8 +58,7 @@ public class GameManager : MonoBehaviour
 
         //Player,CamInit
         player.InitPlayer();
-
-        curScore = 0;
+        
     }
 
     //시간조정
@@ -103,6 +80,30 @@ public class GameManager : MonoBehaviour
         if(topScore <= curScore)
         {
             topScore = curScore;
+        }
+    }
+
+    private void Game()
+    {
+        switch (curGameState)
+        {
+            case GameState.main:
+                curScore = 0;
+                overState = false;
+                break;
+            case GameState.game:
+                EnemyManager.instance.RendEnemy();
+                ItemManager.instance.RendItem();
+                overState = false;
+                break;
+            case GameState.over:
+                if (!overState)
+                {
+                    InitGame();
+                    DataManager.Instance.SetData();
+                    overState = true;
+                }
+                break;
         }
     }
 

@@ -15,53 +15,74 @@ public class TouchManager : MonoBehaviour
     [SerializeField]
     private GameObject player;
 
-    private Vector2 startVec;       //마우스 시작위치
     private Vector2 dragVec;        //마우스 드래그 위치
-
-    private Vector2 moveVec;        //플레이어 움직임 벡터
+    private Vector2 startVec;
+    private Vector2 calPos;         //차이 벡터
 
     //드래그 상태
     public bool isDrag;
-  
+
+    [SerializeField]
+    GameObject startDisPlay, dragDisPlay;
+
+    private void Update()
+    {
+        cam.ZoomCamera(isDrag);
+
+        if (isDrag)
+        {
+            GameManager.instance.SetTimeScale(1);
+
+            //드래그 표시
+            dragDisPlay.transform.position = Camera.main.ScreenToWorldPoint(dragVec) + Vector3.forward * 9;
+            dragDisPlay.SetActive(true);
+        }
+        else
+        {
+            GameManager.instance.SetTimeScale(0.1f);
+            dragDisPlay.SetActive(false);
+        }
+    }
+
     private void OnMouseDown()
     {
-#region 게임상태전환 
+        #region 게임상태전환 
         //게임상태 전환
         if (GameManager.instance.curGameState == GameState.main)
         {
             GameManager.instance.StateTransition(GameState.game);
         }
-        else if (GameManager.instance.curGameState == GameState.over)
-        {
-            player.gameObject.SetActive(true);
-            GameManager.instance.StateTransition(GameState.main);
-        }
-#endregion
+        #endregion
 
+        if (GameManager.instance.curGameState != GameState.game)
+            return;
         if (!isDrag)
         {
+            startVec = Input.mousePosition;
+
+            //터치 시작점 표시
+            startDisPlay.transform.position = Camera.main.ScreenToWorldPoint(startVec);
+            startDisPlay.transform.position += Vector3.forward * 9f;
+            startDisPlay.gameObject.SetActive(true);
+
             //마우스 위치 변수저장
-            startVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             subStart = subCam.ScreenToWorldPoint(Input.mousePosition);
-
-            dragVec = startVec;
             subDrag = subStart;
-
-            //마우스 위치와 현재 플레이어 위치 차이 값
-            moveVec = new Vector2(startVec.x - player.transform.position.x * player.GetComponent<Player>().moveSpeed,
-                                    startVec.y - player.transform.position.y * player.GetComponent<Player>().moveSpeed);
         }
+
     }
 
     private void OnMouseDrag()
     {
         if (GameManager.instance.curGameState != GameState.game)
             return;
-        
+
         //드래그 위치 업데이트
-        dragVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        dragVec = Input.mousePosition;
+
         subDrag = subCam.ScreenToWorldPoint(Input.mousePosition);
         float distacnce = Vector2.Distance(subStart, subDrag);
+
 
         if (distacnce >= 0.1f)
         {
@@ -74,31 +95,24 @@ public class TouchManager : MonoBehaviour
 
         if (isDrag)
         {
-            //moveVec 차이값만큼 간격을 두고 이동.
-            player.transform.position = new Vector3(dragVec.x - moveVec.x,
-                                                     dragVec.y - moveVec.y,
-                                                        0f) / player.GetComponent<Player>().moveSpeed;
+            calPos = new Vector2(dragVec.x - startVec.x,
+                                    dragVec.y - startVec.y);
+
+            calPos = calPos.normalized;
+
+            //calPos 방향으로 moveSpeed로 이동
+            player.transform.Translate(calPos * Time.deltaTime * player.GetComponent<Player>().moveSpeed,
+                                        Space.World);
+
         }
     }
 
     private void OnMouseUp()
     {
-        startVec = dragVec;
         //드래그 종료
         isDrag = false;
+        startDisPlay.gameObject.SetActive(false);
     }
 
-    private void Update()
-    {
-        cam.ZoomCamera(isDrag);
 
-        if (isDrag)
-        {
-            GameManager.instance.SetTimeScale(1);
-        }
-        else
-        {
-            GameManager.instance.SetTimeScale(0.1f);
-        }
-    }
 }

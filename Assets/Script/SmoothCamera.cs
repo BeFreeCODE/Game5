@@ -37,20 +37,13 @@ public class SmoothCamera : MonoBehaviour
     {
         if (!_state)
         {
-            if (myCam.orthographicSize <= 5f)
-                myCam.orthographicSize += .03f;
+            if (myCam.orthographicSize >= 4f)
+                myCam.orthographicSize -= .02f;
         }
         else
         {
-            if (myCam.orthographicSize >= 3.5f)
-                myCam.orthographicSize -= .01f;
+            if (myCam.orthographicSize <= 6f)
+                myCam.orthographicSize += .03f;
         }
     }
-    //public void ZoomCamera2(float _dis)
-    //{
-    //    if (_dis <= 0.7f)
-    //        return;
-
-    //    myCam.orthographicSize = _dis * 2.5f;
-    //}
 }

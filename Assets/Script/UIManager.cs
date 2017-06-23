@@ -9,10 +9,21 @@ public class UIManager : MonoBehaviour {
     private GameObject[] tweenUI;
 
     [SerializeField]
-    private UILabel curScore;
+    private UILabel[] curScore;
+
     [SerializeField]
     private UILabel[] topScore;
 
+    [SerializeField]
+    private GameObject[] overButtons;
+
+    [SerializeField]
+    private GameObject overMenu;
+
+    private void Update()
+    {
+        UIState(GameManager.instance.curGameState);
+    }
 
     //게임상태에 따른 UI상태 정리
     private void UIState(GameState _state)
@@ -23,18 +34,26 @@ public class UIManager : MonoBehaviour {
                 gameStateUI[0].SetActive(true);
                 gameStateUI[1].SetActive(false);
                 gameStateUI[2].SetActive(false);
+
                 break;
             case GameState.game:
-                tweenUI[1].GetComponent<TweenScale>().Play();
-
                 gameStateUI[0].SetActive(false);
                 gameStateUI[1].SetActive(true);
                 gameStateUI[2].SetActive(false);
+
+                tweenUI[1].GetComponent<TweenScale>().Play();
                 break;
             case GameState.over:
                 gameStateUI[0].SetActive(false);
                 gameStateUI[1].SetActive(false);
                 gameStateUI[2].SetActive(true);
+
+                overMenu.GetComponent<TweenScale>().Play();
+
+                for (int i = 0; i < overButtons.Length; i++)
+                {
+                    overButtons[i].GetComponent<TweenPosition>().Play();
+                }
 
                 InitTweenUI();
                 break;
@@ -42,11 +61,14 @@ public class UIManager : MonoBehaviour {
         RendText();
     }
 
+    //uilabel rend
     private void RendText()
     {
         //현재점수 표시
-        curScore.text = GameManager.instance.curScore.ToString();
-
+        for (int i = 0; i < curScore.Length; i++)
+        {
+            curScore[i].text = GameManager.instance.curScore.ToString();
+        }
         //최고점수 표시
         for (int i = 0; i < topScore.Length; i++)
         {
@@ -66,8 +88,66 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    private void Update()
+#region UIButtons
+    public void HomeButton()
     {
-        UIState(GameManager.instance.curGameState);
+#region OverTween초기화
+        curScore[1].GetComponent<TweenScale>().ResetToBeginning();
+        curScore[1].GetComponent<TweenScale>().Play();
+        curScore[1].GetComponent<TweenPosition>().ResetToBeginning();
+        curScore[1].GetComponent<TweenPosition>().Play();
+
+
+        topScore[2].GetComponent<TweenScale>().ResetToBeginning();
+        topScore[2].GetComponent<TweenScale>().Play();
+        topScore[2].GetComponent<TweenPosition>().ResetToBeginning();
+        topScore[2].GetComponent<TweenPosition>().Play();
+
+        overMenu.GetComponent<TweenScale>().ResetToBeginning();
+
+        for(int i=0;i<overButtons.Length;i++)
+        {
+            overButtons[i].GetComponent<TweenPosition>().ResetToBeginning();
+        }
+#endregion
+        GameManager.instance.player.gameObject.SetActive(true);
+        GameManager.instance.StateTransition(GameState.main);
     }
+    public void ReplayButton()
+    {
+#region OverTween초기화
+        curScore[1].GetComponent<TweenScale>().ResetToBeginning();
+        curScore[1].GetComponent<TweenScale>().Play();
+        curScore[1].GetComponent<TweenPosition>().ResetToBeginning();
+        curScore[1].GetComponent<TweenPosition>().Play();
+
+
+        topScore[2].GetComponent<TweenScale>().ResetToBeginning();
+        topScore[2].GetComponent<TweenScale>().Play();
+        topScore[2].GetComponent<TweenPosition>().ResetToBeginning();
+        topScore[2].GetComponent<TweenPosition>().Play();
+
+        overMenu.GetComponent<TweenScale>().ResetToBeginning();
+        for (int i = 0; i < overButtons.Length; i++)
+        {
+            overButtons[i].GetComponent<TweenPosition>().ResetToBeginning();
+        }
+        #endregion
+        GameManager.instance.player.gameObject.SetActive(true);
+        GameManager.instance.curScore = 0;
+        GameManager.instance.StateTransition(GameState.game);
+    }
+    public void RankButton()
+    {
+
+    }
+    public void AchButton()
+    {
+
+    }
+    public void ShareButton()
+    {
+
+    }
+#endregion
 }

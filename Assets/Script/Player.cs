@@ -5,10 +5,10 @@ using System.Collections.Generic;
 public class Player : MonoBehaviour
 {
     //플레이어 이동속도
-    public float moveSpeed = 3f;
+    public float moveSpeed;
 
     //발사 딜레이
-    private float bulletDelayTime = .4f;
+    public float bulletDelayTime = .1f;
     private float curTime = 0f;
 
     //방향지정 숫자
@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
     // DUMMYSYSTEM
     [SerializeField]
     private GameObject dummyObj;
-
+    [SerializeField]
     private List<GameObject> dummyList = new List<GameObject>();
 
     public int dummyNum = 0;
@@ -30,13 +30,12 @@ public class Player : MonoBehaviour
     private float dummyRotTime = 0f;
     private float dummyRotSpeed = 4f;
 
+    private bool getSpeedItem = false;
+    private float speedTime = 0;
+
     private void Start()
     {
-        //게임시작 시 총알생성
-        BulletManager.instance.MakeObjs();
-
         fireDirection = Vector3.up;
-
     }
 
     private void Update()
@@ -45,17 +44,18 @@ public class Player : MonoBehaviour
         {
             PlayerFired();
             RotateDummy();
-
-            #region Zoom2보류
-            //foreach (GameObject enemy in EnemyManager.instance.objList)
-            //{
-            //    float dis = Vector2.Distance(enemy.transform.position, this.transform.position);
-
-            //    if (dis <= 2f)
-            //    {
-            //        Camera.main.GetComponent<SmoothCamera>().ZoomCamera2(dis);
-            //    }
-            //}
+            #region 버프
+            //Speed버프효과
+            if (getSpeedItem)
+            {
+                speedTime += Time.deltaTime;
+                if (speedTime >= 5f)
+                {
+                    moveSpeed = 3f;
+                    getSpeedItem = false;
+                    speedTime = 0f;
+                }
+            }
             #endregion
         }
     }
@@ -65,31 +65,19 @@ public class Player : MonoBehaviour
     {
         curTime += Time.deltaTime;
 
+        if (BulletManager.instance.curBulletType == BulletManager.bulletType.laser)
+        {
+            bulletDelayTime = 1f;
+        }
+        else
+        {
+            bulletDelayTime = .1f;
+        }
         if (curTime >= bulletDelayTime)
         {
             BulletManager.instance.FireBullets(this.transform.position);
 
             curTime = 0f;
-        }
-    }
-
-    //충돌
-    private void OnTriggerEnter(Collider other)
-    {
-        //방향전환 아이템.
-        if (other.transform.tag.Equals("DirItem"))
-        {
-            this.dirNum = other.GetComponent<DirItem>().DIRNUM;
-
-            SetPlayerDirection(dirNum);
-
-            other.gameObject.SetActive(false);
-        }
-        else if (other.transform.tag.Equals("DummyItem"))
-        {
-            MakeDummy();
-
-            other.gameObject.SetActive(false);
         }
     }
 
@@ -141,6 +129,14 @@ public class Player : MonoBehaviour
         dirNum = 1;
         SetPlayerDirection(dirNum);
 
+        //이동, 발사속도
+        moveSpeed = 3f;
+        bulletDelayTime = .1f;
+
+        dummyNum = 0;
+        getSpeedItem = false;
+        speedTime = 0;
+
         this.gameObject.SetActive(false);
     }
 
@@ -164,10 +160,18 @@ public class Player : MonoBehaviour
             return;
 
         dummyNum--;
-        //더미하나 삭제
-        Destroy(dummyList[0]);
-        dummyList.Remove(dummyList[0]);
 
+        if (dummyNum < 0)
+        {
+            GameManager.instance.StateTransition(GameState.over);
+        }
+
+        if (dummyList.Count > 0)
+        {
+            //더미하나 삭제
+            Destroy(dummyList[0]);
+            dummyList.Remove(dummyList[0]);
+        }
     }
 
     //dummy회전
@@ -182,12 +186,44 @@ public class Player : MonoBehaviour
 
             if (this.dirNum == 1 || this.dirNum == 5)
             {
-                dummyList[i].transform.localPosition = new Vector3(dx * 0.7f, 0f, dy * 0.7f);
+                dummyList[i].transform.localPosition = new Vector3(dx, 0f, dy);
             }
             else
             {
-                dummyList[i].transform.localPosition = new Vector3(0f, dy * 0.7f, dx * 0.7f);
+                dummyList[i].transform.localPosition = new Vector3(0f, dy, dx);
             }
         }
+    }
+
+    //충돌
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.transform.tag.Equals("Bullet") || other.transform.tag.Equals("Warning"))
+            return;
+
+        switch (other.transform.tag)
+        {
+            case "DirItem":
+                this.dirNum = other.GetComponent<DirItem>().DIRNUM;
+                SetPlayerDirection(dirNum);
+                break;
+            case "DummyItem":
+                MakeDummy();
+                break;
+            case "MoveItem":
+                getSpeedItem = true;
+                moveSpeed = 6f;
+                break;
+            //Item Random Box
+            case "RandomBox":
+                ItemManager.instance.GetItemBox();
+                break;
+            //적충돌
+            case "Enemy":
+                RemoveDummy();
+                break;
+        }
+
+        other.transform.gameObject.SetActive(false);
     }
 }

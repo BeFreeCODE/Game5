@@ -17,13 +17,26 @@ public class ItemManager : ObjectManager
     {
         if(instance == null)
             instance = this;
-       
     }
 
     private void Start()
     {
-        this.maxNum = 10;
-        MakeObjs();
+        MakeItems();
+    }
+
+    //배열마다 아이템 개수에 맞춰 생성
+    private void MakeItems()
+    {
+        for (int i = 0; i < this.makeObj.Length; i++)
+        {
+            this.maxNum = 20;
+
+            if (i != 0)
+            {
+                this.maxNum = 2;
+            }
+            MakeObjs(this.makeObj[i]);
+        }
     }
 
     //Item Render
@@ -33,7 +46,7 @@ public class ItemManager : ObjectManager
 
         if (curTime >= rendDeleyTime)
         {
-            GameObject newItem = GetObj();
+            GameObject newItem = GetItem();
 
             if (newItem)
             {
@@ -47,13 +60,26 @@ public class ItemManager : ObjectManager
         }
     }
 
+    //이미 생성한 아이템중 랜덤하게 아이템을 가져옴
+    private GameObject GetItem()
+    {
+        int num = Random.Range(0, objList.Count);
+
+        //이미 활성화 되있다면 다시 랜덤.
+        while (objList[num].activeInHierarchy)
+        {
+            num = Random.Range(0, objList.Count);
+        }
+
+        return objList[num];
+    }
+
     //x,y 위치지정
     private void SetPos()
     {
         if(maxRange < minRange)
-        {
             return;
-        }
+        
         x = Random.Range(player.transform.position.x - maxRange, player.transform.position.x + maxRange);
         y = Random.Range(player.transform.position.y - maxRange, player.transform.position.y + maxRange);
 
@@ -64,5 +90,14 @@ public class ItemManager : ObjectManager
             x = Random.Range(player.transform.position.x - maxRange, player.transform.position.x + maxRange);
             y = Random.Range(player.transform.position.y - maxRange, player.transform.position.y + maxRange);
         }
+    }
+
+    //아이템 박스 획득
+    public void GetItemBox()
+    {
+        int _num = Random.Range(0, BulletManager.instance.makeObj.Length);
+
+        BulletManager.instance.SetBulletType(_num);
+
     }
 }

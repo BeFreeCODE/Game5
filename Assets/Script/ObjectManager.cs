@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class ObjectManager : MonoBehaviour
 {
     //생성할 프리팹 오브젝트
-    public GameObject makeObj;
+    public GameObject[] makeObj;
 
     public Player player;
 
@@ -16,11 +16,11 @@ public class ObjectManager : MonoBehaviour
     public int maxNum = 200;
 
     //생성
-    public void MakeObjs()
+    public virtual void MakeObjs(GameObject _obj)
     {
         for (int i = 0; i < maxNum; i++)
         {
-            GameObject newObj = Instantiate(makeObj);
+            GameObject newObj = Instantiate(_obj);
             newObj.transform.parent = this.transform;
             newObj.SetActive(false);
 
@@ -29,7 +29,7 @@ public class ObjectManager : MonoBehaviour
     }
 
     //오브젝트 가져오기
-    public GameObject GetObj()
+    public virtual GameObject GetObj()
     {
         foreach (GameObject _obj in objList)
         {
