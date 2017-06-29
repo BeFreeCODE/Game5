@@ -11,7 +11,9 @@ public class BulletManager : ObjectManager
         normal,
         big,
         laser,
-        bounce
+        bounce,
+        guided,
+        sword
     }
 
     public bulletType curBulletType = bulletType.normal;
@@ -75,7 +77,11 @@ public class BulletManager : ObjectManager
 
         //발사
         fireBullet.GetComponent<Bullet>().SetFireDirection(player.dirNum);
-
+        if (fireBullet.GetComponent<TweenRotation>())
+        {
+            fireBullet.GetComponent<TweenRotation>().ResetToBeginning();
+            fireBullet.GetComponent<TweenRotation>().Play();
+        }
         fireBullet.GetComponent<Bullet>().isFire = true;
     }
 
@@ -97,6 +103,12 @@ public class BulletManager : ObjectManager
                 break;
             case 3:
                 this.curBulletType = bulletType.bounce;
+                break;
+            case 4:
+                this.curBulletType = bulletType.guided;
+                break;
+            case 5:
+                this.curBulletType = bulletType.sword;
                 break;
         }
         

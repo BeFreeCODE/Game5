@@ -9,7 +9,7 @@ public class Player : MonoBehaviour
 
     //발사 딜레이
     public float bulletDelayTime = .1f;
-    private float curTime = 0f;
+    public float curTime = 0f;
 
     //방향지정 숫자
     public int dirNum = 1;
@@ -17,6 +17,8 @@ public class Player : MonoBehaviour
     //방향 vector
     public Vector3 fireDirection;
 
+    [SerializeField]
+    private GameObject getEffect;
 
     // DUMMYSYSTEM
     [SerializeField]
@@ -44,6 +46,7 @@ public class Player : MonoBehaviour
         {
             PlayerFired();
             RotateDummy();
+
             #region 버프
             //Speed버프효과
             if (getSpeedItem)
@@ -63,16 +66,27 @@ public class Player : MonoBehaviour
     //발사
     private void PlayerFired()
     {
-        curTime += Time.deltaTime;
+
+            curTime += Time.deltaTime;
+        
 
         if (BulletManager.instance.curBulletType == BulletManager.bulletType.laser)
         {
             bulletDelayTime = 1f;
         }
+        else if(BulletManager.instance.curBulletType == BulletManager.bulletType.guided)
+        {
+            bulletDelayTime = .3f;
+        }
+        else if (BulletManager.instance.curBulletType == BulletManager.bulletType.sword)
+        {
+            bulletDelayTime = 3f;
+        }
         else
         {
             bulletDelayTime = .1f;
         }
+
         if (curTime >= bulletDelayTime)
         {
             BulletManager.instance.FireBullets(this.transform.position);
@@ -213,10 +227,14 @@ public class Player : MonoBehaviour
             case "MoveItem":
                 getSpeedItem = true;
                 moveSpeed = 6f;
+
+                GetItem(0);
                 break;
             //Item Random Box
             case "RandomBox":
                 ItemManager.instance.GetItemBox();
+                
+                GetItem(1);
                 break;
             //적충돌
             case "Enemy":
@@ -224,6 +242,16 @@ public class Player : MonoBehaviour
                 break;
         }
 
+        
         other.transform.gameObject.SetActive(false);
+    }
+
+    void GetItem(int _sNum)
+    {
+        GameObject _effect = Instantiate(getEffect);
+        _effect.GetComponent<GetEffect>().SetSprite(_sNum);
+        _effect.transform.parent = this.transform;
+        _effect.transform.localPosition = Vector3.zero;
+        _effect.transform.position += Vector3.forward;
     }
 }

@@ -11,17 +11,22 @@ public class Bullet : MonoBehaviour
     //발사속도
     private float bulletSpeed = 8f;
    
-    private BulletManager.bulletType thisType = BulletManager.bulletType.normal;
-    float laserX = 1f;
+    public BulletManager.bulletType thisType = BulletManager.bulletType.normal;
+    float laserX = 2f;
     float laserZ = 0f;
+
+    int bounceNum = 3;
+    
 
     private void OnEnable()
     {
         thisType = BulletManager.instance.curBulletType;
 
+        bounceNum = 3;
+
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserX = 1f;
+            laserX = 2f;
             this.transform.localScale = new Vector3(laserX, 10f, 1f);
         }
     }
@@ -39,7 +44,7 @@ public class Bullet : MonoBehaviour
             }
         }
     }
-    
+   
     //발사
     private void FireBullet()
     {
@@ -55,13 +60,20 @@ public class Bullet : MonoBehaviour
                 laserX = 1f;
             }
         }
+        else if(thisType == BulletManager.bulletType.guided)
+        {
+            //homing
+        }
+        else if(thisType == BulletManager.bulletType.sword)
+        {
+            //this.transform.position = BulletManager.instance.player.transform.position;
+        }
         else
         {
             this.transform.Translate(fireDirection * Time.deltaTime * bulletSpeed, Space.Self);
         }
     }
-
-
+    
     //플레리어와 거리
     private float DistanceToPlayer()
     {
@@ -78,6 +90,11 @@ public class Bullet : MonoBehaviour
         {
             laserZ = (_num - 1) * 45f;
             this.transform.rotation = Quaternion.Euler(new Vector3(0, 0, laserZ));
+        }
+        else if (thisType == BulletManager.bulletType.sword)
+        {
+            this.GetComponent<TweenRotation>().from = new Vector3(0, 0, (_num * 45f) - 45f);
+            this.GetComponent<TweenRotation>().to = new Vector3(0, 0, (_num * 45f) - 45f - 180f);
         }
         switch (_num)
         {
@@ -106,5 +123,28 @@ public class Bullet : MonoBehaviour
                 fireDirection = Vector3.up + Vector3.right;
                 break;
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.transform.tag.Equals("Enemy"))
+        {
+            if(this.thisType == BulletManager.bulletType.bounce)
+            {
+                bounceNum--;
+
+                SetFireDirection(Random.Range(1, 9));
+
+                if(bounceNum <=0)
+                {
+                    OffBullet();
+                }
+            }
+        }
+    }
+
+    public void OffBullet()
+    {
+        this.gameObject.SetActive(false);
     }
 }

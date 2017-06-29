@@ -12,13 +12,16 @@ public enum EnemyType
 
 public class Enemy : MonoBehaviour
 {
-    private EnemyType enemyType = EnemyType.normal;
+
+
+    public EnemyType enemyType = EnemyType.normal;
 
     private float moveSpeed = 1.5f;
     private float rotSpeed = 200f;
+    public float distance = 0f;
 
     //Sprite Renderer
-    public SpriteRenderer renderer;
+    public new SpriteRenderer renderer;
     public Sprite[] enemyImage = new Sprite[3];
     public Sprite[] bossImage = new Sprite[6];
 
@@ -45,13 +48,13 @@ public class Enemy : MonoBehaviour
         laserDelay = 0f;
 
         if (this.enemyType == EnemyType.boss) { Life = 50; }
-        else if(this.enemyType == EnemyType.tanker) { Life = 10; }
+        else if (this.enemyType == EnemyType.tanker) { Life = 10; }
         else { Life = 1; }
     }
 
     void Update()
     {
-        MoveToPlayer();
+        MoveToPlayer();     
     }
 
     //이동
@@ -74,6 +77,10 @@ public class Enemy : MonoBehaviour
                 {
                     this.transform.position += laserMoveVec * Time.deltaTime * moveSpeed;
                 }
+                if(laserDelay >= 5f)
+                {
+                    this.gameObject.SetActive(false);
+                }
             }
         }
         //보스패턴
@@ -86,7 +93,7 @@ public class Enemy : MonoBehaviour
 
             this.transform.Rotate(new Vector3(0, 0, 0.03f * rotSpeed));
 
-  
+
         }
         else
         {
@@ -94,6 +101,11 @@ public class Enemy : MonoBehaviour
                                                   player.transform.position,
                                                   moveSpeed * Time.deltaTime);
             this.transform.Rotate(new Vector3(0, 0, Time.deltaTime * rotSpeed));
+        }
+
+        if (this.gameObject.activeInHierarchy)
+        {
+            distance = Vector2.Distance(this.transform.position, player.transform.position);
         }
     }
 
@@ -143,40 +155,45 @@ public class Enemy : MonoBehaviour
         //총알에 닿으면
         if (other.transform.tag.Equals("Bullet"))
         {
+            //이 오브젝트 타임이 직선운동이면 return
             if (this.enemyType == EnemyType.laser)
                 return;
 
-            if(BulletManager.instance.curBulletType != BulletManager.bulletType.laser)
+            if (BulletManager.instance.curBulletType != BulletManager.bulletType.laser
+                && BulletManager.instance.curBulletType != BulletManager.bulletType.bounce
+                && BulletManager.instance.curBulletType != BulletManager.bulletType.sword)
                 other.gameObject.SetActive(false);
 
-            //tanker일시 normal로 변경.
-            if (this.enemyType == EnemyType.tanker)
+            if (other.GetComponent<Bullet>().thisType == BulletManager.bulletType.laser)
             {
-                Life--;
-
-                if (Life <= 0)
-                {
-                    Life = 1;
-                    this.SetType(EnemyType.normal);
-                }
+                Life -= 5;
+            }
+            if (other.GetComponent<Bullet>().thisType == BulletManager.bulletType.sword)
+            {
+                Life -= 50;
             }
             else
             {
                 Life--;
-
-                if (Life <= 0)
-                {
-                    if (this.enemyType == EnemyType.boss)
-                    {
-                        GameManager.instance.AddScore(10);      //10점
-                    }
-                    else
-                    {
-                        GameManager.instance.AddScore(1);      //1점
-                    }
-                    this.gameObject.SetActive(false);
-                }
             }
+
+            if (Life <= 0)
+            {
+                if (this.enemyType == EnemyType.boss)
+                {
+                    GameManager.instance.AddScore(10);      //10점
+                }
+                else if(this.enemyType == EnemyType.tanker)
+                {
+                    GameManager.instance.AddScore(2);
+                }
+                else
+                {
+                    GameManager.instance.AddScore(1);      //1점
+                }
+                this.gameObject.SetActive(false);
+            }
+
         }
         else if (other.transform.tag.Equals("Warning"))
         {

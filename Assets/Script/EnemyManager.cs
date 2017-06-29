@@ -112,7 +112,7 @@ public class EnemyManager : ObjectManager
         }
         if (laserTime >= rendDeleyTime * 6f)
         {
-            for (int i = 0; i < Random.Range(1, 5); i++)
+            for (int i = 0; i < Random.Range(1, 11); i++)
             {
                 SetPos();
 
@@ -151,7 +151,7 @@ public class EnemyManager : ObjectManager
                 }
             }
         }
-        if (bossTime >= rendDeleyTime * 10f)
+        if (bossTime >= rendDeleyTime * 20f)
         {
             GameObject newEnemy = GetObj();
 

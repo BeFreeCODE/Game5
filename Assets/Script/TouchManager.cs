@@ -39,7 +39,7 @@ public class TouchManager : MonoBehaviour
         }
         else
         {
-            GameManager.instance.SetTimeScale(0.1f);
+            GameManager.instance.SetTimeScale(0f);
             dragDisPlay.SetActive(false);
         }
     }
