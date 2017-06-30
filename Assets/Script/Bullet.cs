@@ -16,7 +16,11 @@ public class Bullet : MonoBehaviour
     float laserZ = 0f;
 
     int bounceNum = 3;
-    
+
+    [SerializeField]
+    private GameObject[] exEffect;
+
+    public int bulletDamage;
 
     private void OnEnable()
     {
@@ -51,7 +55,7 @@ public class Bullet : MonoBehaviour
         //레이저일떄
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserX -= Time.deltaTime * 2f;
+            laserX -= Time.deltaTime * 3f;
             this.transform.localScale = new Vector3(laserX, 20f, 1f);
             
             if (laserX <= 0f)
@@ -60,13 +64,13 @@ public class Bullet : MonoBehaviour
                 laserX = 1f;
             }
         }
-        else if(thisType == BulletManager.bulletType.guided)
+        else if(thisType == BulletManager.bulletType.guided || thisType == BulletManager.bulletType.sword)
         {
             //homing
         }
-        else if(thisType == BulletManager.bulletType.sword)
+        else if(thisType == BulletManager.bulletType.explosion)
         {
-            //this.transform.position = BulletManager.instance.player.transform.position;
+            this.transform.Translate(fireDirection * Time.deltaTime * bulletSpeed * 0.5f, Space.Self);
         }
         else
         {
@@ -139,6 +143,18 @@ public class Bullet : MonoBehaviour
                 {
                     OffBullet();
                 }
+            }
+            else if (this.thisType == BulletManager.bulletType.sword)
+            {
+                GameObject _effect = Instantiate(exEffect[1]);
+                _effect.transform.position = other.transform.position;
+                Destroy(_effect, 1.5f);
+            }
+            else if (this.thisType == BulletManager.bulletType.explosion)
+            {
+                GameObject _effect = Instantiate(exEffect[0]);
+                _effect.transform.position = other.transform.position;
+                Destroy(_effect, 1.5f);
             }
         }
     }

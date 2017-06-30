@@ -12,8 +12,6 @@ public enum EnemyType
 
 public class Enemy : MonoBehaviour
 {
-
-
     public EnemyType enemyType = EnemyType.normal;
 
     private float moveSpeed = 1.5f;
@@ -31,10 +29,13 @@ public class Enemy : MonoBehaviour
     private float laserDelay = 0f;
     private bool aming = false;
 
-    Player player;
+    private Player player;
 
     //보스 체력
     private int Life;
+
+    [SerializeField]
+    private GameObject desEffect;
 
     //Enemy활성화시
     private void OnEnable()
@@ -149,6 +150,32 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    private void DeadCheck()
+    {
+        if (Life <= 0)
+        {
+            GameObject _effect = Instantiate(desEffect);
+            _effect.transform.position = this.transform.position;
+            Destroy(_effect, 0.5f);
+
+            if (this.enemyType == EnemyType.boss)
+            {
+                _effect.transform.localScale = new Vector3(8, 8, 8);
+                GameManager.instance.AddScore(10);      //10점
+            }
+            else if (this.enemyType == EnemyType.tanker)
+            {
+                GameManager.instance.AddScore(2);       //2점
+            }
+            else
+            {
+                GameManager.instance.AddScore(1);      //1점
+            }
+
+            this.gameObject.SetActive(false);
+        }
+    }
+
     //충돌체크
     private void OnTriggerEnter(Collider other)
     {
@@ -159,6 +186,7 @@ public class Enemy : MonoBehaviour
             if (this.enemyType == EnemyType.laser)
                 return;
 
+            //닿아도 사라지지 않는 총알들.
             if (BulletManager.instance.curBulletType != BulletManager.bulletType.laser
                 && BulletManager.instance.curBulletType != BulletManager.bulletType.bounce
                 && BulletManager.instance.curBulletType != BulletManager.bulletType.sword)
@@ -177,28 +205,20 @@ public class Enemy : MonoBehaviour
                 Life--;
             }
 
-            if (Life <= 0)
-            {
-                if (this.enemyType == EnemyType.boss)
-                {
-                    GameManager.instance.AddScore(10);      //10점
-                }
-                else if(this.enemyType == EnemyType.tanker)
-                {
-                    GameManager.instance.AddScore(2);
-                }
-                else
-                {
-                    GameManager.instance.AddScore(1);      //1점
-                }
-                this.gameObject.SetActive(false);
-            }
-
+            DeadCheck();
         }
         else if (other.transform.tag.Equals("Warning"))
         {
             if (this.enemyType == EnemyType.laser)
                 other.gameObject.SetActive(false);
+        }
+        else if(other.transform.tag.Equals("BobmEffect"))
+        {
+            if (this.enemyType == EnemyType.laser)
+                return;
+
+            Life--;
+            DeadCheck();
         }
     }
 }

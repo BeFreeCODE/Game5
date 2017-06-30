@@ -25,22 +25,51 @@ public class TouchManager : MonoBehaviour
     [SerializeField]
     GameObject startDisPlay, dragDisPlay;
 
+    public float distance = 0f;
+
+
     private void Update()
     {
         cam.ZoomCamera(isDrag);
 
         if (isDrag)
         {
-            GameManager.instance.SetTimeScale(1);
-
+            //드래그 길이 체크.
+            distance = Vector2.Distance(Camera.main.ScreenToWorldPoint(startVec), Camera.main.ScreenToWorldPoint(dragVec));
+            
             //드래그 표시
-            dragDisPlay.transform.position = Camera.main.ScreenToWorldPoint(dragVec) + Vector3.forward * 9;
+            if (distance >= 2)
+            {
+                distance = 2;
+                dragDisPlay.transform.position =  startDisPlay.transform.position 
+                    + ((Camera.main.ScreenToWorldPoint(dragVec) + Vector3.forward * 9) - startDisPlay.transform.position).normalized * 2f;
+            }
+            else
+            {
+                dragDisPlay.transform.position = Camera.main.ScreenToWorldPoint(dragVec) + Vector3.forward * 9;
+
+            }
+            //드래그 거리만큼 시간조정
+            GameManager.instance.SetTimeScale(distance * 0.5f);
+
             dragDisPlay.SetActive(true);
+
+            calPos = new Vector2(dragVec.x - startVec.x,
+                        dragVec.y - startVec.y);
+
+            calPos = calPos.normalized;
+
+            //calPos 방향으로 moveSpeed로 이동
+            player.transform.Translate(calPos * Time.deltaTime * player.GetComponent<Player>().moveSpeed,
+                                        Space.World);
+
         }
         else
         {
             GameManager.instance.SetTimeScale(0f);
             dragDisPlay.SetActive(false);
+
+            distance = 0;
         }
     }
 
@@ -56,6 +85,7 @@ public class TouchManager : MonoBehaviour
 
         if (GameManager.instance.curGameState != GameState.game)
             return;
+
         if (!isDrag)
         {
             startVec = Input.mousePosition;
@@ -79,31 +109,19 @@ public class TouchManager : MonoBehaviour
 
         //드래그 위치 업데이트
         dragVec = Input.mousePosition;
+        
 
         subDrag = subCam.ScreenToWorldPoint(Input.mousePosition);
-        float distacnce = Vector2.Distance(subStart, subDrag);
+        float subdistacnce = Vector2.Distance(subStart, subDrag);
 
 
-        if (distacnce >= 0.1f)
+        if (subdistacnce >= 0.1f)
         {
             isDrag = true;
         }
         else
         {
             isDrag = false;
-        }
-
-        if (isDrag)
-        {
-            calPos = new Vector2(dragVec.x - startVec.x,
-                                    dragVec.y - startVec.y);
-
-            calPos = calPos.normalized;
-
-            //calPos 방향으로 moveSpeed로 이동
-            player.transform.Translate(calPos * Time.deltaTime * player.GetComponent<Player>().moveSpeed,
-                                        Space.World);
-
         }
     }
 

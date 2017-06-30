@@ -35,9 +35,12 @@ public class Player : MonoBehaviour
     private bool getSpeedItem = false;
     private float speedTime = 0;
 
+    private SmoothCamera blurCam;
+
     private void Start()
     {
         fireDirection = Vector3.up;
+        blurCam = GameObject.Find("Main Camera").GetComponent<SmoothCamera>();
     }
 
     private void Update()
@@ -66,15 +69,18 @@ public class Player : MonoBehaviour
     //발사
     private void PlayerFired()
     {
+        if (this.transform.tag != "Player")
+            return;
 
-            curTime += Time.deltaTime;
+        curTime += Time.deltaTime;
         
-
+        //총알 타입별로 시간 조절
         if (BulletManager.instance.curBulletType == BulletManager.bulletType.laser)
         {
             bulletDelayTime = 1f;
         }
-        else if(BulletManager.instance.curBulletType == BulletManager.bulletType.guided)
+        else if(BulletManager.instance.curBulletType == BulletManager.bulletType.guided 
+            || BulletManager.instance.curBulletType == BulletManager.bulletType.explosion)
         {
             bulletDelayTime = .3f;
         }
@@ -90,7 +96,16 @@ public class Player : MonoBehaviour
         if (curTime >= bulletDelayTime)
         {
             BulletManager.instance.FireBullets(this.transform.position);
-
+            
+            //더미리스트가 0이 아닐시 동시에 같이 발사해줌.
+            if(dummyList.Count != 0)
+            {
+                foreach(GameObject _dummy in dummyList)
+                {
+                    BulletManager.instance.FireBullets(_dummy.transform.position);
+                }
+            }
+      
             curTime = 0f;
         }
     }
@@ -185,6 +200,8 @@ public class Player : MonoBehaviour
             //더미하나 삭제
             Destroy(dummyList[0]);
             dummyList.Remove(dummyList[0]);
+
+            blurCam.OnBlur();
         }
     }
 
@@ -212,7 +229,9 @@ public class Player : MonoBehaviour
     //충돌
     private void OnTriggerEnter(Collider other)
     {
-        if (other.transform.tag.Equals("Bullet") || other.transform.tag.Equals("Warning"))
+        if (other.transform.tag.Equals("Bullet") 
+            || other.transform.tag.Equals("Warning")
+            || other.transform.tag.Equals("BobmEffect"))
             return;
 
         switch (other.transform.tag)
@@ -246,6 +265,7 @@ public class Player : MonoBehaviour
         other.transform.gameObject.SetActive(false);
     }
 
+    //아이템 획득
     void GetItem(int _sNum)
     {
         GameObject _effect = Instantiate(getEffect);

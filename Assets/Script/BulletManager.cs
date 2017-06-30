@@ -13,7 +13,8 @@ public class BulletManager : ObjectManager
         laser,
         bounce,
         guided,
-        sword
+        sword,
+        explosion
     }
 
     public bulletType curBulletType = bulletType.normal;
@@ -109,6 +110,9 @@ public class BulletManager : ObjectManager
                 break;
             case 5:
                 this.curBulletType = bulletType.sword;
+                break;
+            case 6:
+                this.curBulletType = bulletType.explosion;
                 break;
         }
         
