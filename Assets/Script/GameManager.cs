@@ -5,7 +5,8 @@ public enum GameState
 {
     main,
     game,
-    over
+    over,
+    store
 }
 
 public class GameManager : MonoBehaviour
@@ -34,8 +35,7 @@ public class GameManager : MonoBehaviour
 
         //데이터 불러옴
         DataManager.Instance.GetData();
-
-        Input.multiTouchEnabled = false;
+        
     }
 
     private void OnApplicationQuit()
@@ -67,12 +67,19 @@ public class GameManager : MonoBehaviour
         Time.timeScale = _scale;
     }
 
+    //플레이어 타입 세팅
+    public void SetPlayerType(int _num)
+    {
+        player.ChangePlayerType(_num);
+    }
+
     //상태전환
     public void StateTransition(GameState _state)
     {
         curGameState = _state;
     }
 
+    //점수획득
     public void AddScore(int num)
     {
         curScore += num;
@@ -83,13 +90,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+
     private void Game()
     {
         switch (curGameState)
         {
             case GameState.main:
                 curScore = 0;
-                overState = false;
+                overState = false;        
                 break;
             case GameState.game:
                 EnemyManager.instance.RendEnemy();
@@ -99,10 +108,16 @@ public class GameManager : MonoBehaviour
             case GameState.over:
                 if (!overState)
                 {
+                    SoundManager.instance.StopBGMSound();
+                    SoundManager.instance.PlayEffectSound(3);
+
                     InitGame();
                     DataManager.Instance.SetData();
                     overState = true;
                 }
+                break;
+            case GameState.store:
+                SetTimeScale(1);
                 break;
         }
     }

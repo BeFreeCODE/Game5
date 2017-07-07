@@ -4,133 +4,261 @@ using System.Collections;
 public class TouchManager : MonoBehaviour
 {
     /// <summary>
-    /// 기존 카메라(SmoothCamera)로 좌표비교하여 isDrag를하면 
-    /// 카메라 움직임에 따라 좌표가 정확하지 않아 subCam으로 isDrag만 보조
+    /// 기존 카메라(SmoothCamera)로 좌표비교하여 Drag를하면 
+    /// 카메라 움직임에 따라 좌표가 정확하지 않아 subCam으로 Drag 보조
     /// </summary>
     [SerializeField]
-    private Camera subCam; private Vector2 subStart, subDrag;
+    private Camera subCam;
 
     [SerializeField]
     private SmoothCamera cam;
+
     [SerializeField]
     private GameObject player;
 
-    private Vector2 dragVec;        //마우스 드래그 위치
-    private Vector2 startVec;
-    private Vector2 calPos;         //차이 벡터
+    public GameObject joyStick;
+    public GameObject dirStick;
+
+    private Vector3 joyDragVec, dirDragVec;        //마우스 드래그 위치
+    private Vector3 startVec, startVec2;
+    private Vector3 calPos, calPos2;         //차이 벡터
 
     //드래그 상태
-    public bool isDrag;
-
-    [SerializeField]
-    GameObject startDisPlay, dragDisPlay;
+    public bool joyDrag, dirDrag;
 
     public float distance = 0f;
+    public float limitDistance = 20f;
 
+    int joyNum = -1, dirNum = -1;
 
     private void Update()
     {
-        cam.ZoomCamera(isDrag);
+        if (GameManager.instance.curGameState == GameState.store)
+            return;
 
-        if (isDrag)
+        cam.ZoomCamera(joyDrag);
+        PlayerMove();
+        OnTouch();
+    }
+
+    private void Start()
+    {
+        startVec = joyStick.transform.position;
+        startVec2 = dirStick.transform.position;
+    }
+
+    //게임상태 터치조작
+    private void OnTouch()
+    {
+        #region 유니티에디터
+        //#if UNITY_EDITOR
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    if (GameManager.instance.curGameState == GameState.main)
+        //    {
+        //        GameManager.instance.StateTransition(GameState.game);
+        //    }
+        //    else if (GameManager.instance.curGameState == GameState.game)
+        //    {
+        //        Ray ray = subCam.ScreenPointToRay(Input.mousePosition);
+
+        //        RaycastHit hit;
+
+        //        if (Physics.Raycast(ray.origin, ray.direction * 10, out hit))
+        //        {
+        //            if (hit.collider.transform.tag.Equals("JoyStick"))
+        //            {
+        //                joyDrag = true;
+        //            }
+        //            else if (hit.collider.transform.tag.Equals("DirectionStick"))
+        //            {
+        //                dirDrag = true;
+        //            }
+        //        }
+        //    }
+        //}
+
+        //if (Input.GetMouseButton(0))
+        //{
+        //    if (joyDrag)
+        //    {
+        //        joyDragVec = subCam.ScreenToWorldPoint(Input.mousePosition);
+        //    }
+
+        //    if (dirDrag)
+        //    {
+        //        dirDragVec = subCam.ScreenToWorldPoint(Input.mousePosition);
+        //    }
+        //}
+
+        //if (Input.GetMouseButtonUp(0))
+        //{
+        //    joyDrag = false; dirDrag = false;
+        //    joyDragVec = startVec; dirDragVec = startVec2;
+        //    joyStick.transform.position = startVec;
+        //    dirStick.transform.position = startVec2;
+        //}
+        //#else
+#endregion
+
+        if (Input.touchCount > 0)
+        {
+            Touch[] _touch = Input.touches;
+
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                //터치시작
+                if (_touch[i].phase.Equals(TouchPhase.Began))
+                {
+                    if (GameManager.instance.curGameState == GameState.main)
+                    {
+                        Ray ray = subCam.ScreenPointToRay(_touch[i].position);
+
+                        RaycastHit hit;
+
+                        if (Physics.Raycast(ray.origin, ray.direction * 10, out hit))
+                        {
+                            //버튼 말고 배경을 누르면 시작
+                            if (!hit.collider.tag.Equals("Button"))
+                            {
+                                GameManager.instance.StateTransition(GameState.game);
+                                SoundManager.instance.PlayEffectSound(0);
+                                SoundManager.instance.PlayBGMSound();
+                            }
+                        }
+                    }
+                    else if(GameManager.instance.curGameState == GameState.game)
+                    {
+                        Ray ray = subCam.ScreenPointToRay(_touch[i].position);
+
+                        RaycastHit hit;
+
+                        if (Physics.Raycast(ray.origin, ray.direction * 10, out hit))
+                        {
+                            if (hit.collider.tag.Equals("JoyStick"))
+                            {
+                                joyNum = i;
+                                joyDrag = true;
+                            }
+                            else if (hit.collider.tag.Equals("DirectionStick"))
+                            {
+                                dirNum = i;
+                                dirDrag = true;
+                            }
+                        }
+                    }
+                }
+
+                //드래그
+                if (_touch[i].phase.Equals(TouchPhase.Moved))
+                {
+                    if(joyDrag && i == joyNum)
+                    {
+                        joyDragVec = subCam.ScreenToWorldPoint(_touch[i].position);                       
+                    }
+                    else if(dirDrag && i == dirNum)
+                    {
+                        dirDragVec = subCam.ScreenToWorldPoint(_touch[i].position);
+                    }
+                    ////현태 드래그 위치에 ray를 쏨
+                    //Ray ray = subCam.ScreenPointToRay(_touch[i].position);
+
+                    //RaycastHit hit;
+
+                    //if (Physics.Raycast(ray.origin, ray.direction * 10, out hit))
+                    //{
+                    //    if (hit.collider.transform.tag.Equals("JoyStick"))
+                    //    {
+                    //        joyDragVec = subCam.ScreenToWorldPoint(_touch[i].position);
+                    //        joyNum = i;
+                    //        joyDrag = true;
+                    //    }
+                    //    if (hit.collider.transform.tag.Equals("DirectionStick"))
+                    //    {
+                    //        dirDragVec = subCam.ScreenToWorldPoint(_touch[i].position);
+                    //        dirNum = i;
+                    //        dirDrag = true;
+                    //    }
+                    //}
+                }
+
+                //터치 뗄때
+                if (_touch[i].phase.Equals(TouchPhase.Ended))
+                {
+                    if (i == joyNum)
+                    {
+                        joyDrag = false;
+                        joyDragVec = startVec;
+                        joyStick.transform.position = startVec;
+                        joyNum = -1;
+                        dirNum = 0;
+                    }
+                    else if(i == dirNum)
+                    {
+                        dirDrag = false;
+                        dirDragVec = startVec2;
+                        dirStick.transform.position = startVec2;
+                        dirNum = -1;
+                        joyNum = 0; 
+                    }                
+                }
+            }
+        }
+//#endif
+    }
+
+    private void PlayerMove()
+    {
+        //이동 조이스틱 드래그 상태일때
+        if (joyDrag)
         {
             //드래그 길이 체크.
-            distance = Vector2.Distance(Camera.main.ScreenToWorldPoint(startVec), Camera.main.ScreenToWorldPoint(dragVec));
-            
+            distance = Vector2.Distance(startVec, joyDragVec);
+
             //드래그 표시
             if (distance >= 2)
             {
                 distance = 2;
-                dragDisPlay.transform.position =  startDisPlay.transform.position 
-                    + ((Camera.main.ScreenToWorldPoint(dragVec) + Vector3.forward * 9) - startDisPlay.transform.position).normalized * 2f;
+                joyStick.transform.position = joyDragVec + Vector3.forward * 9;
+                //joyStick.transform.position = ((joyDragVec + Vector3.forward * 9) - startVec).normalized * 2f
+                //                             + startVec;
             }
             else
             {
-                dragDisPlay.transform.position = Camera.main.ScreenToWorldPoint(dragVec) + Vector3.forward * 9;
-
+                joyStick.transform.position = joyDragVec + Vector3.forward * 9;
             }
             //드래그 거리만큼 시간조정
             GameManager.instance.SetTimeScale(distance * 0.5f);
 
-            dragDisPlay.SetActive(true);
-
-            calPos = new Vector2(dragVec.x - startVec.x,
-                        dragVec.y - startVec.y);
+            calPos = joyDragVec - startVec;
 
             calPos = calPos.normalized;
 
             //calPos 방향으로 moveSpeed로 이동
-            player.transform.Translate(calPos * Time.deltaTime * player.GetComponent<Player>().moveSpeed,
-                                        Space.World);
+            Vector2 movePos = calPos * Time.deltaTime * player.GetComponent<Player>().moveSpeed;
 
+            //이동제한.
+            player.transform.Translate(movePos, Space.World);
+            player.transform.position = new Vector3(Mathf.Clamp(player.transform.position.x, limitDistance * -1, limitDistance),
+                                                     Mathf.Clamp(player.transform.position.y, limitDistance * -1, limitDistance),
+                                                     0f);
         }
         else
         {
             GameManager.instance.SetTimeScale(0f);
-            dragDisPlay.SetActive(false);
 
             distance = 0;
         }
-    }
 
-    private void OnMouseDown()
-    {
-        #region 게임상태전환 
-        //게임상태 전환
-        if (GameManager.instance.curGameState == GameState.main)
+        if (dirDrag)
         {
-            GameManager.instance.StateTransition(GameState.game);
-        }
-        #endregion
+            dirStick.transform.position = dirDragVec + Vector3.forward * 9;
 
-        if (GameManager.instance.curGameState != GameState.game)
-            return;
+            calPos2 = dirDragVec - startVec2;
+            calPos2 = calPos2.normalized;
 
-        if (!isDrag)
-        {
-            startVec = Input.mousePosition;
-
-            //터치 시작점 표시
-            startDisPlay.transform.position = Camera.main.ScreenToWorldPoint(startVec);
-            startDisPlay.transform.position += Vector3.forward * 9f;
-            startDisPlay.gameObject.SetActive(true);
-
-            //마우스 위치 변수저장
-            subStart = subCam.ScreenToWorldPoint(Input.mousePosition);
-            subDrag = subStart;
+            player.GetComponent<Player>().SetPlayerDirection(calPos2);
         }
 
     }
-
-    private void OnMouseDrag()
-    {
-        if (GameManager.instance.curGameState != GameState.game)
-            return;
-
-        //드래그 위치 업데이트
-        dragVec = Input.mousePosition;
-        
-
-        subDrag = subCam.ScreenToWorldPoint(Input.mousePosition);
-        float subdistacnce = Vector2.Distance(subStart, subDrag);
-
-
-        if (subdistacnce >= 0.1f)
-        {
-            isDrag = true;
-        }
-        else
-        {
-            isDrag = false;
-        }
-    }
-
-    private void OnMouseUp()
-    {
-        //드래그 종료
-        isDrag = false;
-        startDisPlay.gameObject.SetActive(false);
-    }
-
-
 }

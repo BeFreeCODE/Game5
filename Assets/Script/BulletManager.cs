@@ -19,10 +19,10 @@ public class BulletManager : ObjectManager
 
     public bulletType curBulletType = bulletType.normal;
 
+    //총알들을 배열리스트로 저장
     public List<GameObject[]> _objList = new List<GameObject[]>();
 
     public int typeNum = 0;
-    int makeNum = 0;
 
     private void Awake()
     {
@@ -32,9 +32,9 @@ public class BulletManager : ObjectManager
 
     private void Start()
     {
-        for (makeNum = 0; makeNum < makeObj.Length; makeNum++)
+        for (int i = 0; i < makeObj.Length; i++)
         {
-            this.MakeObjs(this.makeObj[makeNum]);
+            this.MakeObjs(this.makeObj[i]);
         }
     }
 
@@ -77,12 +77,13 @@ public class BulletManager : ObjectManager
         fireBullet.SetActive(true);
 
         //발사
-        fireBullet.GetComponent<Bullet>().SetFireDirection(player.dirNum);
+        fireBullet.GetComponent<Bullet>().SetFireDirection(player.fireDirection);
         if (fireBullet.GetComponent<TweenRotation>())
         {
             fireBullet.GetComponent<TweenRotation>().ResetToBeginning();
             fireBullet.GetComponent<TweenRotation>().Play();
         }
+        fireBullet.GetComponent<Bullet>().SetDamage();
         fireBullet.GetComponent<Bullet>().isFire = true;
     }
 

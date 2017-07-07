@@ -36,6 +36,9 @@ public class Enemy : MonoBehaviour
 
     [SerializeField]
     private GameObject desEffect;
+    [SerializeField]
+    private GameObject damageLabel;
+
 
     //Enemy활성화시
     private void OnEnable()
@@ -150,6 +153,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    //Enemy죽음 체크
     private void DeadCheck()
     {
         if (Life <= 0)
@@ -162,18 +166,40 @@ public class Enemy : MonoBehaviour
             {
                 _effect.transform.localScale = new Vector3(8, 8, 8);
                 GameManager.instance.AddScore(10);      //10점
+
+                SoundManager.instance.PlayEffectSound(2);
             }
             else if (this.enemyType == EnemyType.tanker)
             {
                 GameManager.instance.AddScore(2);       //2점
+
+                SoundManager.instance.PlayEffectSound(1);
             }
             else
             {
                 GameManager.instance.AddScore(1);      //1점
+
+                SoundManager.instance.PlayEffectSound(1);
             }
 
             this.gameObject.SetActive(false);
         }
+    }
+
+    //Damage표시.
+    private void ShowDamage(int _damage, Vector3 pos)
+    {
+        GameObject newlabel = Instantiate(damageLabel);
+
+        newlabel.transform.localScale = new Vector3(1, 1, 1);
+        newlabel.transform.position = pos;
+
+        newlabel.transform.FindChild("label").GetComponent<UILabel>().text = _damage.ToString();
+
+        newlabel.GetComponent<TweenPosition>().from = pos;
+        newlabel.GetComponent<TweenPosition>().to = pos + Vector3.up;
+
+        Destroy(newlabel, 1f);
     }
 
     //충돌체크
@@ -192,18 +218,11 @@ public class Enemy : MonoBehaviour
                 && BulletManager.instance.curBulletType != BulletManager.bulletType.sword)
                 other.gameObject.SetActive(false);
 
-            if (other.GetComponent<Bullet>().thisType == BulletManager.bulletType.laser)
-            {
-                Life -= 5;
-            }
-            if (other.GetComponent<Bullet>().thisType == BulletManager.bulletType.sword)
-            {
-                Life -= 50;
-            }
-            else
-            {
-                Life--;
-            }
+            //총알 데미지
+            Life -= other.GetComponent<Bullet>().bulletDamage;
+
+            //데미지 표시
+            ShowDamage(other.GetComponent<Bullet>().bulletDamage, this.transform.position);
 
             DeadCheck();
         }

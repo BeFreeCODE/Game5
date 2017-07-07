@@ -98,6 +98,5 @@ public class ItemManager : ObjectManager
         int _num = Random.Range(0, BulletManager.instance.makeObj.Length);
 
         BulletManager.instance.SetBulletType(_num);
-
     }
 }

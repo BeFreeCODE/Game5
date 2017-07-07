@@ -20,6 +20,8 @@ public class UIManager : MonoBehaviour {
     [SerializeField]
     private GameObject overMenu;
 
+ 
+
     private void Update()
     {
         UIState(GameManager.instance.curGameState);
@@ -34,12 +36,14 @@ public class UIManager : MonoBehaviour {
                 gameStateUI[0].SetActive(true);
                 gameStateUI[1].SetActive(false);
                 gameStateUI[2].SetActive(false);
+                gameStateUI[3].SetActive(false);
 
                 break;
             case GameState.game:
                 gameStateUI[0].SetActive(false);
                 gameStateUI[1].SetActive(true);
                 gameStateUI[2].SetActive(false);
+                gameStateUI[3].SetActive(false);
 
                 tweenUI[1].GetComponent<TweenScale>().Play();
                 break;
@@ -47,6 +51,7 @@ public class UIManager : MonoBehaviour {
                 gameStateUI[0].SetActive(false);
                 gameStateUI[1].SetActive(false);
                 gameStateUI[2].SetActive(true);
+                gameStateUI[3].SetActive(false);
 
                 overMenu.GetComponent<TweenScale>().Play();
 
@@ -56,6 +61,14 @@ public class UIManager : MonoBehaviour {
                 }
 
                 InitTweenUI();
+                break;
+            case GameState.store:
+                gameStateUI[0].SetActive(false);
+                gameStateUI[1].SetActive(false);
+                gameStateUI[2].SetActive(false);
+                gameStateUI[3].SetActive(true);
+
+
                 break;
         }
         RendText();
@@ -88,6 +101,8 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+
+
 #region UIButtons
     public void HomeButton()
     {
@@ -109,9 +124,11 @@ public class UIManager : MonoBehaviour {
         {
             overButtons[i].GetComponent<TweenPosition>().ResetToBeginning();
         }
-#endregion
-        GameManager.instance.player.gameObject.SetActive(true);
+        #endregion
         GameManager.instance.StateTransition(GameState.main);
+        GameManager.instance.player.gameObject.SetActive(true);
+
+        SoundManager.instance.PlayEffectSound(0);
     }
     public void ReplayButton()
     {
@@ -136,18 +153,27 @@ public class UIManager : MonoBehaviour {
         GameManager.instance.player.gameObject.SetActive(true);
         GameManager.instance.curScore = 0;
         GameManager.instance.StateTransition(GameState.game);
+
+        SoundManager.instance.PlayEffectSound(0);
+    }
+    public void StoreButton()
+    {
+        GameManager.instance.player.gameObject.SetActive(false);
+        GameManager.instance.StateTransition(GameState.store);
+
+        SoundManager.instance.PlayEffectSound(0);
     }
     public void RankButton()
     {
-
+        SoundManager.instance.PlayEffectSound(0);
     }
     public void AchButton()
     {
-
+        SoundManager.instance.PlayEffectSound(0);
     }
     public void ShareButton()
     {
-
+        SoundManager.instance.PlayEffectSound(0);
     }
 #endregion
 }

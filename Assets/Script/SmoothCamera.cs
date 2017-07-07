@@ -27,6 +27,7 @@ public class SmoothCamera : MonoBehaviour
     {
         Vector3 desiredPosition = target.transform.position + offset;
 
+        //부드럽게 따라가기
         if (smooth)
         {
             this.transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
@@ -36,11 +37,12 @@ public class SmoothCamera : MonoBehaviour
             transform.position = desiredPosition;
         }
 
-        if(blurState)
+        //피격 블러효과
+        if (blurState)
         {
             blurTime += Time.deltaTime;
 
-            if(blurTime >= .5f)
+            if (blurTime >= .5f)
             {
                 OffBlur();
                 blurTime = 0f;
@@ -63,9 +65,10 @@ public class SmoothCamera : MonoBehaviour
         }
 
         float blurSize = myCam.orthographicSize * 0.2f;
-        blur.transform.localScale = new Vector3(blurSize, blurSize, 1f);
+        blur.transform.localScale = new Vector3(blurSize * 2.8f, blurSize, 1f);
     }
 
+    //피격 블러 효과
     public void OnBlur()
     {
         blurState = true;

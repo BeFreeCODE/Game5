@@ -20,6 +20,8 @@ public class EnemyManager : ObjectManager
 
     private List<GameObject> warningList = new List<GameObject>();
 
+    public Camera uiCam;
+
     private void Awake()
     {
         if (instance == null)
@@ -40,6 +42,7 @@ public class EnemyManager : ObjectManager
         }
     }
 
+    //Warning 오브젝트
     private GameObject GetWarning()
     {
         foreach (GameObject _warning in warningList)
@@ -62,6 +65,7 @@ public class EnemyManager : ObjectManager
         laserTime += Time.deltaTime;
         ReduceRendTime();
 
+        //Enemy 타입별로 시간비율설정
         if (normalTime >= rendDeleyTime)
         {
             GameObject newEnemy = GetObj();
@@ -69,7 +73,7 @@ public class EnemyManager : ObjectManager
             if (newEnemy)
             {
                 //위치지정
-                SetPos();
+                SetRandomPos();
                 newEnemy.transform.position = new Vector3(x, y, 0);
 
                 newEnemy.GetComponent<Enemy>().SetType(EnemyType.normal);
@@ -85,7 +89,7 @@ public class EnemyManager : ObjectManager
             if (newEnemy)
             {
                 //위치지정
-                SetPos();
+                SetRandomPos();
                 newEnemy.transform.position = new Vector3(x, y, 0);
 
                 newEnemy.GetComponent<Enemy>().SetType(EnemyType.speeder);
@@ -101,7 +105,7 @@ public class EnemyManager : ObjectManager
             if (newEnemy)
             {
                 //위치지정
-                SetPos();
+                SetRandomPos();
                 newEnemy.transform.position = new Vector3(x, y, 0);
 
                 newEnemy.GetComponent<Enemy>().SetType(EnemyType.tanker);
@@ -110,43 +114,129 @@ public class EnemyManager : ObjectManager
                 tankerTime = 0f;
             }
         }
-        if (laserTime >= rendDeleyTime * 6f)
+        if (laserTime >= rendDeleyTime * 10f)
         {
-            for (int i = 0; i < Random.Range(1, 11); i++)
-            {
-                SetPos();
+            int repeatNum = Random.Range(1, 6);
+            int dirNum = Random.Range(1, 5);
 
+            for (int i = 0; i < repeatNum; i++)
+            {
                 GameObject newEnemy = GetObj();
-                float _dx, _dy;
 
                 if (newEnemy)
                 {
-                    _dx = Random.Range(-5f, 5f);
-                    _dy = Random.Range(-5f, 5f);
-
-                    //위치지정
-                    newEnemy.transform.position = new Vector3(x, y, 0);
-
-
-                    newEnemy.GetComponent<Enemy>().SetType(EnemyType.laser);
-                    newEnemy.GetComponent<Enemy>().laserTarget = player.transform.position
-                                                                 + new Vector3(_dx,_dy,0) ;
-                                    
-
-                    for (int j = -20; j < 10; j++)
+                    if (dirNum == 1)
                     {
-                        GameObject warning = GetWarning();
+                        //위치지정, i=간격
+                        x = player.transform.position.x + (i * 2) - repeatNum;
+                        y = player.transform.position.y + 10f;
 
-                        if (warning != null)
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.laser);
+                        newEnemy.GetComponent<Enemy>().laserTarget = player.transform.position + new Vector3(i * 2 - repeatNum, -y, 0);
+
+                        for (int j = -20; j < 0; j++)
                         {
-                            warning.transform.position = player.transform.position + new Vector3(_dx, _dy, 0)
-                            + (newEnemy.transform.position - (player.transform.position + new Vector3(_dx, _dy, 0)) ) * (0.1f * j);
+                            GameObject warning = GetWarning();
 
-                            warning.SetActive(true);
+                            if (warning != null)
+                            {
+                                warning.transform.position = new Vector3(x, y + j, 0);
+
+                                warning.GetComponent<TweenScale>().ResetToBeginning();
+                                warning.GetComponent<TweenScale>().delay = -0.02f * j;
+                                warning.GetComponent<TweenScale>().Play();
+                                warning.SetActive(true);
+                            }
                         }
+                        newEnemy.SetActive(true);
                     }
-                    newEnemy.SetActive(true);
+                    else if(dirNum == 2)
+                    {
+                        //위치지정, i=간격
+                        x = player.transform.position.x + (i * 2) - repeatNum;
+                        y = player.transform.position.y - 10f;
 
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.laser);
+                        newEnemy.GetComponent<Enemy>().laserTarget = player.transform.position + new Vector3(i * 2 - repeatNum, -y, 0);
+
+                        for (int j = -20; j < 0; j++)
+                        {
+                            GameObject warning = GetWarning();
+
+                            if (warning != null)
+                            {
+                                warning.transform.position = new Vector3(x, y - j, 0);
+
+                                warning.GetComponent<TweenScale>().ResetToBeginning();
+                                warning.GetComponent<TweenScale>().delay = -0.02f * j;
+                                warning.GetComponent<TweenScale>().Play();
+                                warning.SetActive(true);
+                            }
+                        }
+                        newEnemy.SetActive(true);
+                    }
+                    else if (dirNum == 3)
+                    {
+                        //위치지정, i=간격
+                        x = player.transform.position.x + 20f;
+                        y = player.transform.position.y + (i * 2) - repeatNum;
+
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.laser);
+                        newEnemy.GetComponent<Enemy>().laserTarget = player.transform.position + new Vector3(-x, i * 2 - repeatNum, 0);
+
+                        for (int j = -40; j < 0; j++)
+                        {
+                            GameObject warning = GetWarning();
+
+                            if (warning != null)
+                            {
+                                warning.transform.position = new Vector3(x + j, y, 0);
+
+                                warning.GetComponent<TweenScale>().ResetToBeginning();
+                                warning.GetComponent<TweenScale>().delay = -0.02f * j;
+                                warning.GetComponent<TweenScale>().Play();
+                                
+                                warning.SetActive(true);
+                            }
+                        }
+                        newEnemy.SetActive(true);
+                    }
+                    else if (dirNum == 4)
+                    {
+                        //위치지정, i=간격
+                        x = player.transform.position.x - 20f;
+                        y = player.transform.position.y + (i * 2) - repeatNum;
+
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.laser);
+                        newEnemy.GetComponent<Enemy>().laserTarget = player.transform.position + new Vector3(-x, i * 2 - repeatNum, 0);
+
+                        for (int j = -40; j < 0; j++)
+                        {
+                            GameObject warning = GetWarning();
+
+                            if (warning != null)
+                            {
+                                warning.transform.position = new Vector3(x - j, y, 0);
+
+                                warning.GetComponent<TweenScale>().ResetToBeginning();
+                                warning.GetComponent<TweenScale>().delay = -0.02f * j;
+                                warning.GetComponent<TweenScale>().Play();
+                                warning.SetActive(true);
+                            }
+                        }
+                        newEnemy.SetActive(true);
+                    }
+                }
+                if(i == repeatNum-1)
+                {
                     laserTime = 0f;
                 }
             }
@@ -158,7 +248,7 @@ public class EnemyManager : ObjectManager
             if (newEnemy)
             {
                 //위치지정
-                SetPos();
+                SetRandomPos();
                 newEnemy.transform.position = new Vector3(x, y, 0);
 
                 newEnemy.GetComponent<Enemy>().SetType(EnemyType.boss);
@@ -169,13 +259,14 @@ public class EnemyManager : ObjectManager
         }
     }
 
+    //시간마다 RendTime설정
     private void ReduceRendTime()
     {
-        if(GameManager.instance.curScore >= 1000)
+        if (GameManager.instance.curScore >= 1000)
         {
             rendDeleyTime = 0.3f;
         }
-        else if(GameManager.instance.curScore >= 800)
+        else if (GameManager.instance.curScore >= 800)
         {
             rendDeleyTime = 0.5f;
         }
@@ -198,11 +289,10 @@ public class EnemyManager : ObjectManager
     }
 
     //x,y 위치지정
-    private void SetPos()
+    private void SetRandomPos()
     {
         x = Random.Range(player.transform.position.x - maxRange, player.transform.position.x + maxRange);
         y = Random.Range(player.transform.position.y - maxRange, player.transform.position.y + maxRange);
-
 
         while (Mathf.Abs(x - player.transform.position.x) <= minRange &&
                 Mathf.Abs(y - player.transform.position.y) <= minRange)

@@ -18,7 +18,7 @@ public class ItemObj : MonoBehaviour {
         if (GameManager.instance.curGameState == GameState.game)
         {
             //거리가 10이상이면 꺼줌.
-            if (DistanceToPlayer() >= 10f)
+            if (DistanceToPlayer() >= 15f)
             {
                 this.gameObject.SetActive(false);
             }

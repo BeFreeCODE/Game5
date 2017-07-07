@@ -15,6 +15,7 @@ public class Player : MonoBehaviour
     public int dirNum = 1;
 
     //방향 vector
+    public Vector3 lookDirection;
     public Vector3 fireDirection;
 
     [SerializeField]
@@ -36,6 +37,11 @@ public class Player : MonoBehaviour
     private float speedTime = 0;
 
     private SmoothCamera blurCam;
+
+    //플레이어 타입 번호
+    public int playerType = 0;
+    public Sprite[] playerImage = new Sprite[7];
+    public GameObject[] playerSprite = new GameObject[2];
 
     private void Start()
     {
@@ -97,8 +103,34 @@ public class Player : MonoBehaviour
         {
             BulletManager.instance.FireBullets(this.transform.position);
             
+            //발사 사운드,데미지
+            switch(BulletManager.instance.curBulletType)
+            {
+                case BulletManager.bulletType.normal:
+                    SoundManager.instance.PlayEffectSound(4);
+                    break;
+                case BulletManager.bulletType.big:
+                    SoundManager.instance.PlayEffectSound(5);
+                    break;
+                case BulletManager.bulletType.laser:
+                    SoundManager.instance.PlayEffectSound(6);
+                    break;
+                case BulletManager.bulletType.bounce:
+                    SoundManager.instance.PlayEffectSound(7);
+                    break;
+                case BulletManager.bulletType.guided:
+                    SoundManager.instance.PlayEffectSound(8);
+                    break;
+                case BulletManager.bulletType.sword:
+                    SoundManager.instance.PlayEffectSound(9);
+                    break;
+                case BulletManager.bulletType.explosion:
+                    SoundManager.instance.PlayEffectSound(10);
+                    break;
+            }
+
             //더미리스트가 0이 아닐시 동시에 같이 발사해줌.
-            if(dummyList.Count != 0)
+            if (dummyList.Count != 0)
             {
                 foreach(GameObject _dummy in dummyList)
                 {
@@ -111,41 +143,11 @@ public class Player : MonoBehaviour
     }
 
     //플레이어 방향 전환
-    private void SetPlayerDirection(int _dirNum)
+    public void SetPlayerDirection(Vector3 dir)
     {
-        switch (_dirNum)
-        {
-            case 1:
-                fireDirection = this.transform.position + Vector3.up;
-                break;
-            case 2:
-                fireDirection = this.transform.position + Vector3.up + Vector3.left;
-                break;
-            case 3:
-                fireDirection = this.transform.position + Vector3.left;
-                break;
-            case 4:
-                fireDirection = this.transform.position + Vector3.left + Vector3.down;
-                break;
-            case 5:
-                fireDirection = this.transform.position + Vector3.down;
-                break;
-            case 6:
-                fireDirection = this.transform.position + Vector3.down + Vector3.right;
-                break;
-            case 7:
-                fireDirection = this.transform.position + Vector3.right;
-                break;
-            case 8:
-                fireDirection = this.transform.position + Vector3.up + Vector3.right;
-                break;
-        }
-
-        if (fireDirection != Vector3.zero)
-        {
-            //플레이어 바라보는 방향 전환
-            this.transform.LookAt(fireDirection);
-        }
+        fireDirection = dir;
+        lookDirection = this.transform.position + dir;
+        this.transform.LookAt(lookDirection);
     }
 
     //플레이어 초기화
@@ -156,7 +158,7 @@ public class Player : MonoBehaviour
 
         //방향
         dirNum = 1;
-        SetPlayerDirection(dirNum);
+        //PlayerDirection(dirNum);
 
         //이동, 발사속도
         moveSpeed = 3f;
@@ -169,6 +171,21 @@ public class Player : MonoBehaviour
         this.gameObject.SetActive(false);
     }
 
+    //비행기 타입 변경
+    public void ChangePlayerType(int _typeNum)
+    {
+        this.playerType = _typeNum;
+
+        //총알변경
+        BulletManager.instance.SetBulletType(this.playerType);
+
+        //Sprite Image변경
+        playerSprite[0].GetComponent<SpriteRenderer>().sprite = playerImage[this.playerType];
+        playerSprite[1].GetComponent<SpriteRenderer>().sprite = playerImage[this.playerType];
+
+    }
+
+    #region 더미관련
     //더미플레이어 추가
     public void MakeDummy()
     {
@@ -179,6 +196,11 @@ public class Player : MonoBehaviour
         GameObject _dummy = Instantiate(dummyObj);
         _dummy.transform.parent = this.transform;
         _dummy.transform.localRotation = Quaternion.identity;
+
+        //Sprite Image변경
+        _dummy.GetComponent<Player>().playerSprite[0].GetComponent<SpriteRenderer>().sprite = playerImage[this.playerType];
+        _dummy.GetComponent<Player>().playerSprite[1].GetComponent<SpriteRenderer>().sprite = playerImage[this.playerType];
+
         dummyList.Add(_dummy);
     }
 
@@ -215,20 +237,17 @@ public class Player : MonoBehaviour
             dx = Mathf.Cos(dummyRotTime + (i * (6.28f / dummyNum)));
             dy = Mathf.Sin(dummyRotTime + (i * (6.28f / dummyNum)));
 
-            if (this.dirNum == 1 || this.dirNum == 5)
-            {
-                dummyList[i].transform.localPosition = new Vector3(dx, 0f, dy);
-            }
-            else
-            {
-                dummyList[i].transform.localPosition = new Vector3(0f, dy, dx);
-            }
+            dummyList[i].transform.localPosition = new Vector3(0f, dy, dx);   
         }
     }
+#endregion
 
     //충돌
     private void OnTriggerEnter(Collider other)
     {
+        if (GameManager.instance.curGameState != GameState.game)
+            return;
+
         if (other.transform.tag.Equals("Bullet") 
             || other.transform.tag.Equals("Warning")
             || other.transform.tag.Equals("BobmEffect"))
@@ -238,7 +257,7 @@ public class Player : MonoBehaviour
         {
             case "DirItem":
                 this.dirNum = other.GetComponent<DirItem>().DIRNUM;
-                SetPlayerDirection(dirNum);
+                //PlayerDirection(dirNum);
                 break;
             case "DummyItem":
                 MakeDummy();
@@ -261,7 +280,6 @@ public class Player : MonoBehaviour
                 break;
         }
 
-        
         other.transform.gameObject.SetActive(false);
     }
 

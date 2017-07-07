@@ -10,18 +10,17 @@ public class Bullet : MonoBehaviour
 
     //발사속도
     private float bulletSpeed = 8f;
-   
-    public BulletManager.bulletType thisType = BulletManager.bulletType.normal;
-    float laserX = 2f;
-    float laserZ = 0f;
+    private float laserWidth = 1f;
 
-    int bounceNum = 3;
+    public BulletManager.bulletType thisType = BulletManager.bulletType.normal;
 
     [SerializeField]
     private GameObject[] exEffect;
 
     public int bulletDamage;
+    private int bounceNum = 3;
 
+    
     private void OnEnable()
     {
         thisType = BulletManager.instance.curBulletType;
@@ -30,8 +29,8 @@ public class Bullet : MonoBehaviour
 
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserX = 2f;
-            this.transform.localScale = new Vector3(laserX, 10f, 1f);
+            laserWidth = 1f;
+            this.transform.localScale = new Vector3(laserWidth, 10f, 1f);
         }
     }
 
@@ -44,6 +43,7 @@ public class Bullet : MonoBehaviour
             //거리가 10이상이면 꺼줌
             if (DistanceToPlayer() >= 10f)
             {
+                isFire = false;
                 this.gameObject.SetActive(false);
             }
         }
@@ -55,13 +55,13 @@ public class Bullet : MonoBehaviour
         //레이저일떄
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserX -= Time.deltaTime * 3f;
-            this.transform.localScale = new Vector3(laserX, 20f, 1f);
+            laserWidth -= Time.deltaTime * 5f;
+            this.transform.localScale = new Vector3(laserWidth, 20f, 1f);
             
-            if (laserX <= 0f)
+            if (laserWidth <= 0f)
             {
                 this.gameObject.SetActive(false);
-                laserX = 1f;
+                laserWidth = 1f;
             }
         }
         else if(thisType == BulletManager.bulletType.guided || thisType == BulletManager.bulletType.sword)
@@ -88,43 +88,50 @@ public class Bullet : MonoBehaviour
     }
 
     //총알 발사방향
-    public void SetFireDirection(int _num)
+    public void SetFireDirection(Vector3 dir)
     {
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserZ = (_num - 1) * 45f;
-            this.transform.rotation = Quaternion.Euler(new Vector3(0, 0, laserZ));
+            float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
+
+            this.transform.rotation = Quaternion.Euler(0, 0, -angle);
+  
         }
         else if (thisType == BulletManager.bulletType.sword)
         {
-            this.GetComponent<TweenRotation>().from = new Vector3(0, 0, (_num * 45f) - 45f);
-            this.GetComponent<TweenRotation>().to = new Vector3(0, 0, (_num * 45f) - 45f - 180f);
+            float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
+
+            this.GetComponent<TweenRotation>().from = new Vector3(0, 0, -angle );
+            this.GetComponent<TweenRotation>().to = new Vector3(0, 0, -angle - 180f);
         }
-        switch (_num)
+        this.fireDirection = dir;
+    
+    }
+
+    public void SetDamage()
+    {
+        switch(this.thisType)
         {
-            case 1:
-                fireDirection = Vector3.up;
+            case BulletManager.bulletType.normal:
+                bulletDamage = 1;
                 break;
-            case 2:
-                fireDirection = Vector3.up + Vector3.left;
+            case BulletManager.bulletType.big:
+                bulletDamage = 1;
                 break;
-            case 3:
-                fireDirection = Vector3.left;
+            case BulletManager.bulletType.laser:
+                bulletDamage = 5;
                 break;
-            case 4:
-                fireDirection = Vector3.left + Vector3.down;
+            case BulletManager.bulletType.bounce:
+                bulletDamage = 1;
                 break;
-            case 5:
-                fireDirection = Vector3.down;
+            case BulletManager.bulletType.guided:
+                bulletDamage = 1;
                 break;
-            case 6:
-                fireDirection = Vector3.down + Vector3.right;
+            case BulletManager.bulletType.sword:
+                bulletDamage = 50;
                 break;
-            case 7:
-                fireDirection = Vector3.right;
-                break;
-            case 8:
-                fireDirection = Vector3.up + Vector3.right;
+            case BulletManager.bulletType.explosion:
+                bulletDamage = 1;
                 break;
         }
     }
@@ -136,13 +143,52 @@ public class Bullet : MonoBehaviour
             if(this.thisType == BulletManager.bulletType.bounce)
             {
                 bounceNum--;
+             
+                //팅기는 방향
+                int _randNum = Random.Range(1, 9);
+                Vector3 randPos = Vector3.up;
+              
+                switch (_randNum)
+                {
+                    case 1:
+                        randPos =  Vector3.up;
+                        break;
+                    case 2:
+                        randPos =  Vector3.up + Vector3.right;
+                        break;
+                    case 3:
+                        randPos =  Vector3.right;
+                        break;
+                    case 4:
+                        randPos =  Vector3.right + Vector3.down;
+                        break;
+                    case 5:
+                        randPos =  Vector3.down;
+                        break;
+                    case 6:
+                        randPos =  Vector3.down + Vector3.left;
+                        break;
+                    case 7:
+                        randPos =  Vector3.left;
+                        break;
+                    case 8:
+                        randPos =  Vector3.left + Vector3.up;
+                        break;
 
-                SetFireDirection(Random.Range(1, 9));
+                }
+                
+                SetFireDirection(randPos.normalized);
 
+                //더이상 팅길수 없을때 Off
                 if(bounceNum <=0)
                 {
                     OffBullet();
                 }
+
+                //피격이펙트
+                GameObject _effect = Instantiate(exEffect[2]);
+                _effect.transform.position = other.transform.position;
+                Destroy(_effect, 1.5f);
             }
             else if (this.thisType == BulletManager.bulletType.sword)
             {
@@ -153,6 +199,12 @@ public class Bullet : MonoBehaviour
             else if (this.thisType == BulletManager.bulletType.explosion)
             {
                 GameObject _effect = Instantiate(exEffect[0]);
+                _effect.transform.position = other.transform.position;
+                Destroy(_effect, 1.5f);
+            }
+            else
+            {
+                GameObject _effect = Instantiate(exEffect[2]);
                 _effect.transform.position = other.transform.position;
                 Destroy(_effect, 1.5f);
             }
