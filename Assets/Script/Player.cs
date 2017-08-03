@@ -4,15 +4,21 @@ using System.Collections.Generic;
 
 public class Player : MonoBehaviour
 {
-    //플레이어 이동속도
-    public float moveSpeed;
-
-    //발사 딜레이
+    //Damage
+    public int Damage = 1;
+    //MoveSpeed
+    public float moveSpeed = 3;
+    //FireSpeed
     public float bulletDelayTime = .1f;
-    public float curTime = 0f;
 
-    //방향지정 숫자
-    public int dirNum = 1;
+    public int powerNum = 1;
+    public float powerGauge = 0f;
+    public float maxGauge = 100f;
+
+    public float limit;
+    private bool gaugeState = false;
+
+    public float curTime = 0f;
 
     //방향 vector
     public Vector3 lookDirection;
@@ -20,6 +26,20 @@ public class Player : MonoBehaviour
 
     [SerializeField]
     private GameObject getEffect;
+
+    //Speed 버프
+    public bool getSpeedItem = false;
+    public float speedTime = 0;
+    //자석버프
+    public bool getMagnetItem = false;
+    public float magnetTime = 0;
+
+    private SmoothCamera blurCam;
+
+    //플레이어 타입 번호
+    public int playerType = 0;
+    public Sprite[] playerImage = new Sprite[7];
+    public GameObject[] playerSprite = new GameObject[2];
 
     // DUMMYSYSTEM
     [SerializeField]
@@ -33,28 +53,23 @@ public class Player : MonoBehaviour
     private float dummyRotTime = 0f;
     private float dummyRotSpeed = 4f;
 
-    private bool getSpeedItem = false;
-    private float speedTime = 0;
-
-    private SmoothCamera blurCam;
-
-    //플레이어 타입 번호
-    public int playerType = 0;
-    public Sprite[] playerImage = new Sprite[7];
-    public GameObject[] playerSprite = new GameObject[2];
-
-    private void Start()
+    private void Awake()
     {
         fireDirection = Vector3.up;
         blurCam = GameObject.Find("Main Camera").GetComponent<SmoothCamera>();
     }
 
+    private void Start()
+    {
+        GetPlayerJsonData(); 
+    }
+
     private void Update()
     {
+        RotateDummy();
         if (GameManager.instance.curGameState == GameState.game)
         {
             PlayerFired();
-            RotateDummy();
 
             #region 버프
             //Speed버프효과
@@ -68,8 +83,54 @@ public class Player : MonoBehaviour
                     speedTime = 0f;
                 }
             }
+            //Magnet버프
+            if (getMagnetItem)
+            {
+                magnetTime += Time.deltaTime;
+                if (magnetTime >= 10f)
+                {
+                    getMagnetItem = false;
+                    magnetTime = 0f;
+                }
+            }
             #endregion
+
+            //powerItem습득시
+            if (gaugeState)
+            {
+                GetPowerItem();
+            }
+            else
+            {
+                if (powerGauge > 0)
+                    powerGauge -= 3f * Time.deltaTime;
+
+                //게이지가 최소로 줄어들면
+                if (powerGauge <= 0 && powerNum > 0)
+                {
+                    RemoveDummy();
+                    powerNum--;
+                    maxGauge -= 10;
+                    powerGauge = maxGauge - 10;
+                }
+            }
+
         }
+    }
+
+    //JsonData 불러 적용
+    //type , level, data
+    public void GetPlayerJsonData()
+    {
+        Damage = GameManager.instance.jsonData.LoadData(playerType,
+            GameManager.instance.redLevel[playerType],
+            "damage");
+        moveSpeed = GameManager.instance.jsonData.LoadData(playerType,
+            GameManager.instance.greenLevel[playerType],
+            "moveSpeed");
+        bulletDelayTime = GameManager.instance.jsonData.LoadData(playerType,
+            GameManager.instance.blueLevel[playerType],
+            "fireSpeed") * 0.1f;
     }
 
     //발사
@@ -79,32 +140,13 @@ public class Player : MonoBehaviour
             return;
 
         curTime += Time.deltaTime;
-        
-        //총알 타입별로 시간 조절
-        if (BulletManager.instance.curBulletType == BulletManager.bulletType.laser)
-        {
-            bulletDelayTime = 1f;
-        }
-        else if(BulletManager.instance.curBulletType == BulletManager.bulletType.guided 
-            || BulletManager.instance.curBulletType == BulletManager.bulletType.explosion)
-        {
-            bulletDelayTime = .3f;
-        }
-        else if (BulletManager.instance.curBulletType == BulletManager.bulletType.sword)
-        {
-            bulletDelayTime = 3f;
-        }
-        else
-        {
-            bulletDelayTime = .1f;
-        }
 
         if (curTime >= bulletDelayTime)
         {
             BulletManager.instance.FireBullets(this.transform.position);
-            
+
             //발사 사운드,데미지
-            switch(BulletManager.instance.curBulletType)
+            switch (BulletManager.instance.curBulletType)
             {
                 case BulletManager.bulletType.normal:
                     SoundManager.instance.PlayEffectSound(4);
@@ -132,14 +174,50 @@ public class Player : MonoBehaviour
             //더미리스트가 0이 아닐시 동시에 같이 발사해줌.
             if (dummyList.Count != 0)
             {
-                foreach(GameObject _dummy in dummyList)
+                foreach (GameObject _dummy in dummyList)
                 {
                     BulletManager.instance.FireBullets(_dummy.transform.position);
                 }
             }
-      
+
             curTime = 0f;
         }
+    }
+
+    //파워아이템
+    private void GetPowerItem()
+    {
+        //powerGauge get
+        if (powerGauge <= limit)
+        {
+            powerGauge += 0.5f;
+        }
+        else
+        {
+            gaugeState = false;
+        }
+
+        //powerGauge full
+        if (powerGauge >= maxGauge)
+        {
+            if (powerNum < 5)
+            {
+                PowerUp();
+                powerGauge = 0f;
+                limit = 20f;
+                maxGauge += 10f;
+            }
+            else
+                return;
+        }
+    }
+
+    //기체 파워업
+    private void PowerUp()
+    {
+        powerNum++;
+
+        MakeDummy();
     }
 
     //플레이어 방향 전환
@@ -157,16 +235,22 @@ public class Player : MonoBehaviour
         this.transform.position = Vector3.zero;
 
         //방향
-        dirNum = 1;
-        //PlayerDirection(dirNum);
+        this.transform.localRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
 
-        //이동, 발사속도
-        moveSpeed = 3f;
-        bulletDelayTime = .1f;
+        //이동, 발사속도,Dmage
+        GetPlayerJsonData();
+
+        //버프해제
+        getMagnetItem = false;
+        getSpeedItem = false;
+        speedTime = 0f;
+        magnetTime = 0f;
+
+        //power level init
+        powerGauge = 0;
+        powerNum = 0;
 
         dummyNum = 0;
-        getSpeedItem = false;
-        speedTime = 0;
 
         this.gameObject.SetActive(false);
     }
@@ -183,7 +267,15 @@ public class Player : MonoBehaviour
         playerSprite[0].GetComponent<SpriteRenderer>().sprite = playerImage[this.playerType];
         playerSprite[1].GetComponent<SpriteRenderer>().sprite = playerImage[this.playerType];
 
+        foreach (GameObject _dummy in this.dummyList)
+        {
+            _dummy.GetComponent<Player>().ChangePlayerType(_typeNum);
+        }
+
+        //type에 따른 jsonData불러오기
+        GetPlayerJsonData();
     }
+
 
     #region 더미관련
     //더미플레이어 추가
@@ -237,46 +329,93 @@ public class Player : MonoBehaviour
             dx = Mathf.Cos(dummyRotTime + (i * (6.28f / dummyNum)));
             dy = Mathf.Sin(dummyRotTime + (i * (6.28f / dummyNum)));
 
-            dummyList[i].transform.localPosition = new Vector3(0f, dy, dx);   
+            dummyList[i].transform.localPosition = new Vector3(0f, dy, dx);
         }
     }
-#endregion
+    #endregion
 
     //충돌
     private void OnTriggerEnter(Collider other)
     {
-        if (GameManager.instance.curGameState != GameState.game)
+        if (GameManager.instance.curGameState != GameState.game
+            && GameManager.instance.curGameState != GameState.ready)
             return;
 
-        if (other.transform.tag.Equals("Bullet") 
+        if (other.transform.tag.Equals("Bullet")
             || other.transform.tag.Equals("Warning")
             || other.transform.tag.Equals("BobmEffect"))
             return;
 
         switch (other.transform.tag)
         {
-            case "DirItem":
-                this.dirNum = other.GetComponent<DirItem>().DIRNUM;
-                //PlayerDirection(dirNum);
-                break;
-            case "DummyItem":
-                MakeDummy();
+            case "PowerUpItem":
+                gaugeState = true;
+                limit = powerGauge + 20f;
+                GetItem(1);
                 break;
             case "MoveItem":
                 getSpeedItem = true;
+                speedTime = 0f;
                 moveSpeed = 6f;
 
                 GetItem(0);
                 break;
-            //Item Random Box
-            case "RandomBox":
-                ItemManager.instance.GetItemBox();
-                
-                GetItem(1);
+            case "MagnetItem":
+                getMagnetItem = true;
+                magnetTime = 0f;
+                GetItem(2);
                 break;
             //적충돌
             case "Enemy":
-                RemoveDummy();
+                if (powerNum > 0)
+                {
+                    powerGauge = 0;
+                }
+                else
+                {
+                    GameManager.instance.StateTransition(GameState.over);
+                }
+                break;
+            case "GetBox":
+                for (int i = 0; i < ItemManager.instance.boxItems.Count; i++)
+                {
+                    Destroy(ItemManager.instance.boxItems[i]);
+                    if (i == ItemManager.instance.boxItems.Count - 1)
+                    {
+                        ItemManager.instance.boxItems.Clear();
+                    }
+                }
+
+                switch (other.GetComponent<GetBox>().thisBoxType)
+                {
+                    case GetBox.boxType.normal:
+                        ChangePlayerType(0);
+                        break;
+                    case GetBox.boxType.big:
+                        ChangePlayerType(1);
+                        break;
+                    case GetBox.boxType.laser:
+                        ChangePlayerType(2);
+                        break;
+                    case GetBox.boxType.bounce:
+                        ChangePlayerType(3);
+                        break;
+                    case GetBox.boxType.guided:
+                        ChangePlayerType(4);
+                        break;
+                    case GetBox.boxType.sword:
+                        ChangePlayerType(5);
+                        break;
+                    case GetBox.boxType.explosion:
+                        ChangePlayerType(6);
+                        break;
+                    case GetBox.boxType.coin:
+                        GameManager.instance.coin += Random.Range(50, 500);
+                        break;
+
+                }
+
+                GameManager.instance.StateTransition(GameState.game);
                 break;
         }
 

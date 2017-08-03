@@ -20,10 +20,11 @@ public class Bullet : MonoBehaviour
     public int bulletDamage;
     private int bounceNum = 3;
 
-    
     private void OnEnable()
     {
         thisType = BulletManager.instance.curBulletType;
+        if (thisType == null)
+            thisType = BulletManager.bulletType.normal;
 
         bounceNum = 3;
 
@@ -36,6 +37,11 @@ public class Bullet : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.instance.curGameState != GameState.game
+            && GameManager.instance.curGameState != GameState.store
+            && GameManager.instance.curGameState != GameState.store2)
+            return;
+
         if (isFire)
         {
             FireBullet();
@@ -72,6 +78,10 @@ public class Bullet : MonoBehaviour
         {
             this.transform.Translate(fireDirection * Time.deltaTime * bulletSpeed * 0.5f, Space.Self);
         }
+        else if (thisType == BulletManager.bulletType.big)
+        {
+            this.transform.Translate(Vector3.up * Time.deltaTime * bulletSpeed, Space.Self);
+        }
         else
         {
             this.transform.Translate(fireDirection * Time.deltaTime * bulletSpeed, Space.Self);
@@ -104,34 +114,43 @@ public class Bullet : MonoBehaviour
             this.GetComponent<TweenRotation>().from = new Vector3(0, 0, -angle );
             this.GetComponent<TweenRotation>().to = new Vector3(0, 0, -angle - 180f);
         }
+        else if (thisType == BulletManager.bulletType.big)
+        {
+            float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
+
+            this.transform.rotation = Quaternion.Euler(0, 0, -angle);
+        }
+
         this.fireDirection = dir;
     
     }
 
-    public void SetDamage()
+
+    //총알 데미지 설정
+    public void SetDamage(int _damage)
     {
         switch(this.thisType)
         {
             case BulletManager.bulletType.normal:
-                bulletDamage = 1;
+                bulletDamage = _damage;
                 break;
             case BulletManager.bulletType.big:
-                bulletDamage = 1;
+                bulletDamage = _damage;
                 break;
             case BulletManager.bulletType.laser:
-                bulletDamage = 5;
+                bulletDamage = _damage;
                 break;
             case BulletManager.bulletType.bounce:
-                bulletDamage = 1;
+                bulletDamage = _damage;
                 break;
             case BulletManager.bulletType.guided:
-                bulletDamage = 1;
+                bulletDamage = _damage;
                 break;
             case BulletManager.bulletType.sword:
-                bulletDamage = 50;
+                bulletDamage = _damage;
                 break;
             case BulletManager.bulletType.explosion:
-                bulletDamage = 1;
+                bulletDamage = _damage;
                 break;
         }
     }

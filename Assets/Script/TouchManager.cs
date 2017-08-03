@@ -11,7 +11,7 @@ public class TouchManager : MonoBehaviour
     private Camera subCam;
 
     [SerializeField]
-    private SmoothCamera cam;
+    private SmoothCamera cam,bloomCam;
 
     [SerializeField]
     private GameObject player;
@@ -23,20 +23,29 @@ public class TouchManager : MonoBehaviour
     private Vector3 startVec, startVec2;
     private Vector3 calPos, calPos2;         //차이 벡터
 
+    private Vector3 temp;
+
+
     //드래그 상태
     public bool joyDrag, dirDrag;
 
     public float distance = 0f;
     public float limitDistance = 20f;
 
-    int joyNum = -1, dirNum = -1;
+    int joyNum, dirNum;
+
+    [SerializeField]
+    private GameObject[] standard;
 
     private void Update()
     {
-        if (GameManager.instance.curGameState == GameState.store)
+        if (GameManager.instance.curGameState == GameState.store 
+            || GameManager.instance.curGameState == GameState.store2)
             return;
 
         cam.ZoomCamera(joyDrag);
+        bloomCam.ZoomCamera(joyDrag);
+
         PlayerMove();
         OnTouch();
     }
@@ -45,6 +54,10 @@ public class TouchManager : MonoBehaviour
     {
         startVec = joyStick.transform.position;
         startVec2 = dirStick.transform.position;
+        temp = Vector3.up;
+
+        joyNum = -1;
+        dirNum = -1;
     }
 
     //게임상태 터치조작
@@ -99,7 +112,7 @@ public class TouchManager : MonoBehaviour
         //    dirStick.transform.position = startVec2;
         //}
         //#else
-#endregion
+        #endregion
 
         if (Input.touchCount > 0)
         {
@@ -127,7 +140,8 @@ public class TouchManager : MonoBehaviour
                             }
                         }
                     }
-                    else if(GameManager.instance.curGameState == GameState.game)
+                    else if (GameManager.instance.curGameState == GameState.game
+                        || GameManager.instance.curGameState == GameState.ready)
                     {
                         Ray ray = subCam.ScreenPointToRay(_touch[i].position);
 
@@ -137,12 +151,15 @@ public class TouchManager : MonoBehaviour
                         {
                             if (hit.collider.tag.Equals("JoyStick"))
                             {
+                                standard[0].SetActive(true);
                                 joyNum = i;
                                 joyDrag = true;
                             }
                             else if (hit.collider.tag.Equals("DirectionStick"))
                             {
+                                standard[1].SetActive(true);
                                 dirNum = i;
+
                                 dirDrag = true;
                             }
                         }
@@ -152,11 +169,11 @@ public class TouchManager : MonoBehaviour
                 //드래그
                 if (_touch[i].phase.Equals(TouchPhase.Moved))
                 {
-                    if(joyDrag && i == joyNum)
+                    if (joyDrag && i == joyNum)
                     {
-                        joyDragVec = subCam.ScreenToWorldPoint(_touch[i].position);                       
+                        joyDragVec = subCam.ScreenToWorldPoint(_touch[i].position);
                     }
-                    else if(dirDrag && i == dirNum)
+                    else if (dirDrag && i == dirNum)
                     {
                         dirDragVec = subCam.ScreenToWorldPoint(_touch[i].position);
                     }
@@ -185,26 +202,37 @@ public class TouchManager : MonoBehaviour
                 //터치 뗄때
                 if (_touch[i].phase.Equals(TouchPhase.Ended))
                 {
-                    if (i == joyNum)
+                    if (i == joyNum && joyDrag)
                     {
+                        standard[0].SetActive(false);
                         joyDrag = false;
                         joyDragVec = startVec;
                         joyStick.transform.position = startVec;
                         joyNum = -1;
                         dirNum = 0;
                     }
-                    else if(i == dirNum)
+                    else if (i == dirNum && dirDrag)
                     {
+                        standard[1].SetActive(false);
                         dirDrag = false;
                         dirDragVec = startVec2;
                         dirStick.transform.position = startVec2;
                         dirNum = -1;
-                        joyNum = 0; 
-                    }                
+                        joyNum = 0;
+                    }
                 }
             }
         }
-//#endif
+        else if (Input.touchCount == 0)
+        {
+            joyDrag = false;
+            joyDragVec = startVec;
+            joyStick.transform.position = startVec;
+            dirDrag = false;
+            dirDragVec = startVec2;
+            dirStick.transform.position = startVec2;
+        }
+        //#endif
     }
 
     private void PlayerMove()
@@ -236,12 +264,10 @@ public class TouchManager : MonoBehaviour
 
             //calPos 방향으로 moveSpeed로 이동
             Vector2 movePos = calPos * Time.deltaTime * player.GetComponent<Player>().moveSpeed;
+            player.transform.Translate(movePos, Space.World);
 
             //이동제한.
-            player.transform.Translate(movePos, Space.World);
-            player.transform.position = new Vector3(Mathf.Clamp(player.transform.position.x, limitDistance * -1, limitDistance),
-                                                     Mathf.Clamp(player.transform.position.y, limitDistance * -1, limitDistance),
-                                                     0f);
+            player.transform.position = Vector3.ClampMagnitude(player.transform.position, limitDistance);
         }
         else
         {
@@ -257,8 +283,12 @@ public class TouchManager : MonoBehaviour
             calPos2 = dirDragVec - startVec2;
             calPos2 = calPos2.normalized;
 
-            player.GetComponent<Player>().SetPlayerDirection(calPos2);
-        }
+            if (calPos2 != Vector3.zero)
+            {
+                temp = calPos2;
+            }
 
+            player.GetComponent<Player>().SetPlayerDirection(temp);
+        }
     }
 }

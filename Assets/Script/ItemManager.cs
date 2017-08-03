@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ItemManager : ObjectManager  
 {
@@ -12,6 +13,8 @@ public class ItemManager : ObjectManager
 
     [SerializeField]
     private float maxRange, minRange;
+
+    public List<GameObject> boxItems = new List<GameObject>();
 
     private void Awake()
     {
@@ -92,11 +95,4 @@ public class ItemManager : ObjectManager
         }
     }
 
-    //아이템 박스 획득
-    public void GetItemBox()
-    {
-        int _num = Random.Range(0, BulletManager.instance.makeObj.Length);
-
-        BulletManager.instance.SetBulletType(_num);
-    }
 }

@@ -6,36 +6,56 @@ public enum GameState
     main,
     game,
     over,
-    store
+    store,
+    store2,
+    ready
 }
+
+
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
     public GameState curGameState = GameState.main;
-    
+
+    public JsonData jsonData;
     public Player player;
 
+    //점수, 자원
     public int curScore = 0;
     public int topScore = 0;
+    public int coin;
 
+    public int redLoot, greenLoot, blueLoot;
+    public int redCoin, blueCoin, greenCoin;
+    public int[] redLevel = new int[7];
+    public int[] blueLevel = new int[7];
+    public int[] greenLevel = new int [7];
+
+    //스테이지
+    public int stageNum = 0;
+    public float stageCurTime = 0f;
+    public float stageLimitTime = 30f;
+
+    public bool enemyRend = false;
     private bool overState = false;
 
     private void Awake()
     {
         if (instance == null)
             instance = this;
+
+        //데이터 불러옴
+        DataManager.Instance.GetData();
+
+        enemyRend = true;
     }
 
     private void Start()
     {
         //게임시작 시 시간정지
         SetTimeScale(0f);
-
-        //데이터 불러옴
-        DataManager.Instance.GetData();
-        
     }
 
     private void OnApplicationQuit()
@@ -49,6 +69,10 @@ public class GameManager : MonoBehaviour
     {
         //EnemyInit
         EnemyManager.instance.InitObjs();
+        EnemyManager.instance.InitEnemyData();
+
+        //한계점 원상복귀
+        EnemyManager.instance.touchManager.limitDistance = 30f;
 
         //bulletInit
         BulletManager.instance.InitObjs();
@@ -58,7 +82,8 @@ public class GameManager : MonoBehaviour
 
         //Player,CamInit
         player.InitPlayer();
-        
+
+        overState = true;
     }
 
     //시간조정
@@ -77,6 +102,7 @@ public class GameManager : MonoBehaviour
     public void StateTransition(GameState _state)
     {
         curGameState = _state;
+
     }
 
     //점수획득
@@ -89,8 +115,6 @@ public class GameManager : MonoBehaviour
             topScore = curScore;
         }
     }
-
-
 
     private void Game()
     {
@@ -113,10 +137,13 @@ public class GameManager : MonoBehaviour
 
                     InitGame();
                     DataManager.Instance.SetData();
-                    overState = true;
+
                 }
                 break;
             case GameState.store:
+                SetTimeScale(1);
+                break;
+            case GameState.store2:
                 SetTimeScale(1);
                 break;
         }

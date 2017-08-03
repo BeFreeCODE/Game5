@@ -14,7 +14,7 @@ public class BulletManager : ObjectManager
         bounce,
         guided,
         sword,
-        explosion
+        explosion       //7가지
     }
 
     public bulletType curBulletType = bulletType.normal;
@@ -68,22 +68,55 @@ public class BulletManager : ObjectManager
         return null;
     }
 
+    public override void InitObjs()
+    {
+        foreach(GameObject[] _objs in _objList)
+        {
+            for(int i=0;i<_objs.Length;i++)
+            {
+                _objs[i].SetActive(false);
+            }
+        }
+    }
+
     //총알 발사.
     public void FireBullets(Vector3 _pos)
     {
         //총알하나 불러와서
         GameObject fireBullet = GetObj();
         fireBullet.transform.position = _pos;
+        fireBullet.transform.localScale = new Vector3(1f, 1f, 1f);
         fireBullet.SetActive(true);
 
         //발사
         fireBullet.GetComponent<Bullet>().SetFireDirection(player.fireDirection);
+     
         if (fireBullet.GetComponent<TweenRotation>())
         {
             fireBullet.GetComponent<TweenRotation>().ResetToBeginning();
             fireBullet.GetComponent<TweenRotation>().Play();
         }
-        fireBullet.GetComponent<Bullet>().SetDamage();
+        fireBullet.GetComponent<Bullet>().SetDamage(player.Damage);
+        fireBullet.GetComponent<Bullet>().isFire = true;
+    }
+
+    public void FireBullets(Vector3 _pos, Vector3 _dir, float _damage)
+    {
+        //총알하나 불러와서
+        GameObject fireBullet = GetObj();
+        fireBullet.transform.position = _pos;
+        fireBullet.transform.localScale = new Vector3(2f, 2f, 2f);
+        fireBullet.SetActive(true);
+
+        //발사
+        fireBullet.GetComponent<Bullet>().SetFireDirection(_dir);
+
+        if (fireBullet.GetComponent<TweenRotation>())
+        {
+            fireBullet.GetComponent<TweenRotation>().ResetToBeginning();
+            fireBullet.GetComponent<TweenRotation>().Play();
+        }
+        fireBullet.GetComponent<Bullet>().SetDamage((int)_damage);
         fireBullet.GetComponent<Bullet>().isFire = true;
     }
 

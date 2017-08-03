@@ -3,6 +3,8 @@ using System.Collections;
 
 public class ItemObj : MonoBehaviour {
 
+    float offTime = 0f;
+
     //플레리어와 거리
     private float DistanceToPlayer()
     {
@@ -11,6 +13,11 @@ public class ItemObj : MonoBehaviour {
 
         return Vector3.Distance(myPos, playerPos);
 
+    }
+
+    private void OnEnable()
+    {
+        offTime = 0f;
     }
 
     private void Update()
@@ -22,6 +29,31 @@ public class ItemObj : MonoBehaviour {
             {
                 this.gameObject.SetActive(false);
             }
+
+            if(this.transform.tag.Equals("PowerUpItem"))
+            {
+                if(GameManager.instance.player.getMagnetItem)
+                {
+                    if( DistanceToPlayer() < 3f)
+                    {
+                        this.transform.position = Vector3.MoveTowards(this.transform.position,
+                                                                       GameManager.instance.player.transform.position,
+                                                                       Time.deltaTime * 8f);
+                    }
+                }
+            }
+            if(this.transform.tag.Equals("Warning"))
+            {
+                offTime += Time.deltaTime;
+                if (offTime >= 3f)
+                {
+                    this.gameObject.SetActive(false);
+                }
+            }
+        }
+        else
+        {
+            this.gameObject.SetActive(false);
         }
     }
 }

@@ -34,11 +34,16 @@ public class Enemy : MonoBehaviour
     //보스 체력
     private int Life;
 
+    public int tankerLife = 10;
+    public int bossLife = 50;
+    public int normalLife = 1;
+
     [SerializeField]
     private GameObject desEffect;
     [SerializeField]
     private GameObject damageLabel;
-
+    [SerializeField]
+    private GameObject getBox;
 
     //Enemy활성화시
     private void OnEnable()
@@ -51,9 +56,9 @@ public class Enemy : MonoBehaviour
         aming = false;
         laserDelay = 0f;
 
-        if (this.enemyType == EnemyType.boss) { Life = 50; }
-        else if (this.enemyType == EnemyType.tanker) { Life = 10; }
-        else { Life = 1; }
+        if (this.enemyType == EnemyType.boss) { Life = bossLife + GameManager.instance.stageNum; }
+        else if (this.enemyType == EnemyType.tanker) { Life = tankerLife + GameManager.instance.stageNum; }
+        else { Life = normalLife + GameManager.instance.stageNum; }
     }
 
     void Update()
@@ -123,38 +128,38 @@ public class Enemy : MonoBehaviour
             case EnemyType.normal:
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[0];
-                this.transform.localScale = new Vector3(1f, 1f, 1f);
+                this.transform.localScale = new Vector3(2f, 2f, 2f);
                 moveSpeed = 1.5f;
                 break;
             case EnemyType.speeder:
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[1];
-                this.transform.localScale = new Vector3(1f, 1f, 1f);
+                this.transform.localScale = new Vector3(2f, 2f, 2f);
                 moveSpeed = 2.5f;
                 break;
             case EnemyType.tanker:
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[2];
-                this.transform.localScale = new Vector3(1f, 1f, 1f);
+                this.transform.localScale = new Vector3(3f, 3f, 3f);
                 moveSpeed = 1.5f;
                 break;
             case EnemyType.laser:
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[3];
-                this.transform.localScale = new Vector3(1f, 1f, 1f);
+                this.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 moveSpeed = 15f;
                 break;
             case EnemyType.boss:
                 this.GetComponent<BoxCollider>().size = new Vector3(1f, 1f, .5f);
                 this.renderer.sprite = bossImage[Random.Range(0, 6)];
-                this.transform.localScale = new Vector3(2f, 2f, 1f);
+                this.transform.localScale = new Vector3(4f, 4f, 4f);
                 moveSpeed = 0.03f;
                 break;
         }
     }
 
     //Enemy죽음 체크
-    private void DeadCheck()
+    public void DeadCheck()
     {
         if (Life <= 0)
         {
@@ -167,17 +172,56 @@ public class Enemy : MonoBehaviour
                 _effect.transform.localScale = new Vector3(8, 8, 8);
                 GameManager.instance.AddScore(10);      //10점
 
+                //Item Drop
+                for (int i = 0; i < 4; i++)
+                {
+                    GameObject dropBox = Instantiate(getBox);
+                    dropBox.transform.position = player.transform.position;
+                    if(i==0)
+                    {
+                        dropBox.GetComponent<GetBox>().thisBoxType = GetBox.boxType.coin;
+                    }
+                    ItemManager.instance.boxItems.Add(dropBox);
+                    dropBox.SetActive(true);
+                }
+
+                //Enemy전부 죽임
+                foreach (GameObject _enemy in EnemyManager.instance.objList)
+                {
+                    if (_enemy.activeInHierarchy)
+                    {
+                        _enemy.SetActive(false);
+
+                        _effect = Instantiate(desEffect);
+                        _effect.transform.position = _enemy.transform.position;
+                        Destroy(_effect, 0.5f);
+                    }
+                }
+
                 SoundManager.instance.PlayEffectSound(2);
+
             }
             else if (this.enemyType == EnemyType.tanker)
             {
                 GameManager.instance.AddScore(2);       //2점
+
+                GameManager.instance.blueLoot++;
+
+                SoundManager.instance.PlayEffectSound(1);
+            }
+            else if(this.enemyType == EnemyType.speeder)
+            {
+                GameManager.instance.AddScore(1);      //1점
+
+                GameManager.instance.greenLoot++;
 
                 SoundManager.instance.PlayEffectSound(1);
             }
             else
             {
                 GameManager.instance.AddScore(1);      //1점
+
+                GameManager.instance.redLoot++;
 
                 SoundManager.instance.PlayEffectSound(1);
             }
@@ -197,7 +241,7 @@ public class Enemy : MonoBehaviour
         newlabel.transform.FindChild("label").GetComponent<UILabel>().text = _damage.ToString();
 
         newlabel.GetComponent<TweenPosition>().from = pos;
-        newlabel.GetComponent<TweenPosition>().to = pos + Vector3.up;
+        newlabel.GetComponent<TweenPosition>().to = pos + (Vector3.up * 1f);
 
         Destroy(newlabel, 1f);
     }

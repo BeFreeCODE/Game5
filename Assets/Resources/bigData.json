@@ -1,0 +1,39 @@
+{
+    "statData": [
+        {
+            "type": "big",
+            "level": 1,
+            "damage": 1,
+            "moveSpeed": 3,
+            "fireSpeed": 5
+        },
+        {
+            "type": "big",
+            "level": 2,
+            "damage": 2,
+            "moveSpeed": 4,
+            "fireSpeed": 4
+        },
+        {
+            "type": "big",
+            "level": 3,
+            "damage": 3,
+            "moveSpeed": 5,
+            "fireSpeed": 3
+        },
+        {
+            "type": "big",
+            "level": 4,
+            "damage": 4,
+            "moveSpeed": 6,
+            "fireSpeed": 2
+        },
+        {
+            "type": "big",
+            "level": 5,
+            "damage": 5,
+            "moveSpeed": 7,
+            "fireSpeed": 1
+        }
+    ]
+}

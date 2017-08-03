@@ -25,6 +25,13 @@ public class SmoothCamera : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (GameManager.instance.curGameState == GameState.store
+            || GameManager.instance.curGameState == GameState.store2)
+        {
+            this.transform.position = new Vector3(0, 0, -10);
+            myCam.orthographicSize = 5f;
+            return;
+        }
         Vector3 desiredPosition = target.transform.position + offset;
 
         //부드럽게 따라가기
