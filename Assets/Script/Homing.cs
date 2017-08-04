@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class Homing : MonoBehaviour
-{ 
+{
     Transform myTransform;
 
     [SerializeField]
@@ -12,6 +12,8 @@ public class Homing : MonoBehaviour
     Vector3 Axis;
 
     Quaternion newRotation;
+
+    public float homingDelay = 0;
     float destroyTime = 0;
     int num = 0;
 
@@ -22,35 +24,40 @@ public class Homing : MonoBehaviour
 
     private void OnEnable()
     {
+        homingDelay = 0;
         FindEnemy();
-        num++;   
+        num++;
     }
     private void OnDisable()
     {
         TargetTransform = null;
+        homingDelay = 0;
     }
 
     void Update()
     {
         destroyTime += Time.deltaTime;
-        
-        if (destroyTime >= 3f)
+        homingDelay += Time.deltaTime;
+
+        if (destroyTime >= 5f)
         {
             this.gameObject.SetActive(false);
             destroyTime = 0f;
         }
-
-        if (TargetTransform != null)
+        if (homingDelay >= .4f)
         {
-            Dir = myTransform.position - TargetTransform.position;
-            Axis = Vector3.Cross(Dir, myTransform.up);
+            if (TargetTransform != null)
+            {
+                Dir = myTransform.position - TargetTransform.position;
+                Axis = Vector3.Cross(Dir, myTransform.up);
 
-            newRotation = Quaternion.AngleAxis(Time.deltaTime * 360, Axis) * myTransform.rotation;
+                newRotation = Quaternion.AngleAxis(Time.deltaTime * 360, Axis) * myTransform.rotation;
 
-            myTransform.rotation = Quaternion.Lerp(myTransform.rotation, newRotation, 50 * Time.deltaTime);
+                myTransform.rotation = Quaternion.Lerp(myTransform.rotation, newRotation, 50 * Time.deltaTime);
+            }
+
+            this.transform.Translate(Vector3.up * Time.deltaTime * 10f);
         }
-
-        this.transform.Translate(Vector3.up * Time.deltaTime * 10f);
     }
 
     //유도미사일, 적찾기
@@ -71,7 +78,7 @@ public class Homing : MonoBehaviour
                 if (EnemyManager.instance.objList[i].GetComponent<Enemy>().enemyType != EnemyType.laser)
                 {
                     float _distance = EnemyManager.instance.objList[i].GetComponent<Enemy>().distance;
-                   
+
                     if (_distance <= min)
                     {
                         min = _distance;

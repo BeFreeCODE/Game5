@@ -63,18 +63,31 @@ public class Bullet : MonoBehaviour
         {
             laserWidth -= Time.deltaTime * 5f;
             this.transform.localScale = new Vector3(laserWidth, 20f, 1f);
-            
+
             if (laserWidth <= 0f)
             {
                 this.gameObject.SetActive(false);
                 laserWidth = 1f;
             }
         }
-        else if(thisType == BulletManager.bulletType.guided || thisType == BulletManager.bulletType.sword)
+        else if (thisType == BulletManager.bulletType.guided)
         {
-            //homing
+            if (this.GetComponent<Homing>().homingDelay < .4f)
+            {
+                this.transform.Translate(Vector3.up * Time.deltaTime * bulletSpeed, Space.Self);
+            }
+            else
+            {
+                //homing.cs
+            }
         }
-        else if(thisType == BulletManager.bulletType.explosion)
+        else if (thisType == BulletManager.bulletType.sword)
+        {
+
+            this.transform.Translate(Vector3.up * Time.deltaTime * bulletSpeed, Space.Self);
+        
+        }
+        else if (thisType == BulletManager.bulletType.explosion)
         {
             this.transform.Translate(fireDirection * Time.deltaTime * bulletSpeed * 0.5f, Space.Self);
         }
@@ -114,7 +127,7 @@ public class Bullet : MonoBehaviour
             this.GetComponent<TweenRotation>().from = new Vector3(0, 0, -angle );
             this.GetComponent<TweenRotation>().to = new Vector3(0, 0, -angle - 180f);
         }
-        else if (thisType == BulletManager.bulletType.big)
+        else if (thisType == BulletManager.bulletType.big || thisType == BulletManager.bulletType.guided)
         {
             float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
 
@@ -129,30 +142,7 @@ public class Bullet : MonoBehaviour
     //총알 데미지 설정
     public void SetDamage(int _damage)
     {
-        switch(this.thisType)
-        {
-            case BulletManager.bulletType.normal:
-                bulletDamage = _damage;
-                break;
-            case BulletManager.bulletType.big:
-                bulletDamage = _damage;
-                break;
-            case BulletManager.bulletType.laser:
-                bulletDamage = _damage;
-                break;
-            case BulletManager.bulletType.bounce:
-                bulletDamage = _damage;
-                break;
-            case BulletManager.bulletType.guided:
-                bulletDamage = _damage;
-                break;
-            case BulletManager.bulletType.sword:
-                bulletDamage = _damage;
-                break;
-            case BulletManager.bulletType.explosion:
-                bulletDamage = _damage;
-                break;
-        }
+        bulletDamage = _damage;
     }
 
     private void OnTriggerEnter(Collider other)
