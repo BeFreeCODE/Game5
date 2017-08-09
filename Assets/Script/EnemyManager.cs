@@ -49,6 +49,9 @@ public class EnemyManager : ObjectManager
     public void InitEnemyData()
     {
         bossState = false;
+        GameManager.instance.enemyRend = true;
+
+        GameManager.instance.stageCurTime = 0f;
 
         normalTime = 0f;
         speederTime = 0f;
@@ -105,7 +108,7 @@ public class EnemyManager : ObjectManager
                     normalTime = 0f;
                 }
             }
-            if (speederTime >= rendDeleyTime * 5f)
+            if (speederTime >= rendDeleyTime * 3f)
             {
                 GameObject newEnemy = GetObj();
 

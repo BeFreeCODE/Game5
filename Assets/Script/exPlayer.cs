@@ -70,11 +70,8 @@ public class exPlayer : MonoBehaviour
         if (GameManager.instance.curGameState != GameState.store)
             return;
 
-        if (Input.GetMouseButton(0))
-        {
-            SetData();
-        }
-
+        SetData();
+ 
         transform.Translate(Vector3.right * Time.deltaTime * moveSpeed);
 
         if (transform.position.x >= 10f)

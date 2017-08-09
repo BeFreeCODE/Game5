@@ -34,8 +34,8 @@ public class Enemy : MonoBehaviour
     //보스 체력
     private int Life;
 
-    public int tankerLife = 10;
-    public int bossLife = 50;
+    public int tankerLife = 5;
+    public int bossLife = 20;
     public int normalLife = 1;
 
     [SerializeField]
@@ -56,9 +56,9 @@ public class Enemy : MonoBehaviour
         aming = false;
         laserDelay = 0f;
 
-        if (this.enemyType == EnemyType.boss) { Life = bossLife + GameManager.instance.stageNum; }
-        else if (this.enemyType == EnemyType.tanker) { Life = tankerLife + GameManager.instance.stageNum; }
-        else { Life = normalLife + GameManager.instance.stageNum; }
+        if (this.enemyType == EnemyType.boss) { Life = bossLife + (1 * GameManager.instance.stageNum); }
+        else if (this.enemyType == EnemyType.tanker) { Life = tankerLife + (1 * GameManager.instance.stageNum); }
+        else { Life = normalLife + (1 * GameManager.instance.stageNum); }
     }
 
     void Update()
@@ -126,33 +126,46 @@ public class Enemy : MonoBehaviour
         switch (enemyType)
         {
             case EnemyType.normal:
+                this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[0];
-                this.transform.localScale = new Vector3(2f, 2f, 2f);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum*.5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1);
                 moveSpeed = 1.5f;
                 break;
             case EnemyType.speeder:
+                this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[1];
-                this.transform.localScale = new Vector3(2f, 2f, 2f);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1);
                 moveSpeed = 2.5f;
                 break;
             case EnemyType.tanker:
+                this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[2];
-                this.transform.localScale = new Vector3(3f, 3f, 3f);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1);
                 moveSpeed = 1.5f;
                 break;
             case EnemyType.laser:
+                this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[3];
-                this.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1,
+                    (GameManager.instance.stageNum * .5f) + 1);
                 moveSpeed = 15f;
                 break;
             case EnemyType.boss:
+                this.renderer.gameObject.layer = 8;
                 this.GetComponent<BoxCollider>().size = new Vector3(1f, 1f, .5f);
                 this.renderer.sprite = bossImage[Random.Range(0, 6)];
-                this.transform.localScale = new Vector3(4f, 4f, 4f);
+                this.transform.localScale = new Vector3(GameManager.instance.stageNum + 3, GameManager.instance.stageNum + 3, GameManager.instance.stageNum + 3);
                 moveSpeed = 0.03f;
                 break;
         }
@@ -205,7 +218,7 @@ public class Enemy : MonoBehaviour
             {
                 GameManager.instance.AddScore(2);       //2점
 
-                GameManager.instance.blueLoot++;
+                GameManager.instance.greenLoot++;
 
                 SoundManager.instance.PlayEffectSound(1);
             }
@@ -213,7 +226,7 @@ public class Enemy : MonoBehaviour
             {
                 GameManager.instance.AddScore(1);      //1점
 
-                GameManager.instance.greenLoot++;
+                GameManager.instance.blueLoot++;
 
                 SoundManager.instance.PlayEffectSound(1);
             }

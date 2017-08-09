@@ -34,13 +34,16 @@ public class UIManager : MonoBehaviour {
     private UILabel gaugeLevel;
 
     [SerializeField]
-    private UILabel stageTime;
-
-    [SerializeField]
     private UILabel[] loot;
 
     [SerializeField]
     private UILabel[] stone;
+
+    [SerializeField]
+    private GameObject[] fade;
+
+    [SerializeField]
+    private UISprite stageTime;
 
     private void Update()
     {
@@ -62,6 +65,10 @@ public class UIManager : MonoBehaviour {
                 gameStateUI[2].SetActive(false);
                 gameStateUI[3].SetActive(false);
                 gameStateUI[4].SetActive(false);
+                fade[1].GetComponent<TweenAlpha>().ResetToBeginning();
+                fade[1].GetComponent<TweenAlpha>().Play();
+                fade[2].GetComponent<TweenAlpha>().ResetToBeginning();
+                fade[2].GetComponent<TweenAlpha>().Play();
 
                 break;
             case GameState.game:
@@ -72,6 +79,8 @@ public class UIManager : MonoBehaviour {
                 gameStateUI[4].SetActive(false);
 
                 tweenUI[1].GetComponent<TweenScale>().Play();
+                tweenUI[2].GetComponent<TweenScale>().Play();
+                tweenUI[3].GetComponent<TweenScale>().Play();
 
                 RendGauge();
                 break;
@@ -88,6 +97,8 @@ public class UIManager : MonoBehaviour {
                 {
                     overButtons[i].GetComponent<TweenPosition>().Play();
                 }
+                fade[0].GetComponent<TweenAlpha>().ResetToBeginning();
+                fade[0].GetComponent<TweenAlpha>().Play();
 
                 InitTweenUI();
                 break;
@@ -97,6 +108,9 @@ public class UIManager : MonoBehaviour {
                 gameStateUI[2].SetActive(false);
                 gameStateUI[3].SetActive(true);
                 gameStateUI[4].SetActive(false);
+
+                fade[0].GetComponent<TweenAlpha>().ResetToBeginning();
+                fade[0].GetComponent<TweenAlpha>().Play();
                 break;
             case GameState.store2:
                 gameStateUI[0].SetActive(false);
@@ -107,6 +121,9 @@ public class UIManager : MonoBehaviour {
 
                 layer = new string[] { "UI", "Bullet" };
                 uiCam.cullingMask = LayerMask.GetMask(layer);
+
+                fade[0].GetComponent<TweenAlpha>().ResetToBeginning();
+                fade[0].GetComponent<TweenAlpha>().Play();
                 break;
         }
         RendText();
@@ -118,12 +135,12 @@ public class UIManager : MonoBehaviour {
         //현재점수 표시
         for (int i = 0; i < curScore.Length; i++)
         {
-            curScore[i].text = GameManager.instance.curScore.ToString();
+            curScore[i].text = "score : " + GameManager.instance.curScore.ToString();
         }
         //최고점수 표시
         for (int i = 0; i < topScore.Length; i++)
         {
-            topScore[i].text = GameManager.instance.topScore.ToString();
+            topScore[i].text = "best : " + GameManager.instance.topScore.ToString();
         }
         //코인 표시
         for (int i = 0; i < coin.Length; i++)
@@ -136,22 +153,39 @@ public class UIManager : MonoBehaviour {
         loot[2].text = GameManager.instance.greenLoot.ToString();
 
         //Stage 시간표시
-        stageTime.text = GameManager.instance.stageCurTime.ToString("N0");
-
+        if (GameManager.instance.stageCurTime >= GameManager.instance.stageLimitTime)
+        {
+            stageTime.fillAmount = 1;
+            stageTime.color = Color.red;
+        }
+        else
+        {
+            stageTime.fillAmount = (GameManager.instance.stageLimitTime - GameManager.instance.stageCurTime) / GameManager.instance.stageLimitTime;
+        }
+        tweenUI[3].GetComponent<UILabel>().text = (GameManager.instance.stageNum + 1).ToString();
+  
         stone[0].text = GameManager.instance.redCoin.ToString();
         stone[1].text = GameManager.instance.blueCoin.ToString();
         stone[2].text = GameManager.instance.greenCoin.ToString();
+        stone[3].text = GameManager.instance.redCoin.ToString();
+        stone[4].text = GameManager.instance.blueCoin.ToString();
+        stone[5].text = GameManager.instance.greenCoin.ToString();
     }
 
     //Tween 초기화.
     private void InitTweenUI()
     {
-        for (int i = 0; i < tweenUI.Length; i++)
+        for (int i = 0; i < 4; i++)
         {
             tweenUI[i].GetComponent<TweenScale>().ResetToBeginning();
-            if (i == 1)
+            if (i == 1 || i==2)
                 continue;
             tweenUI[i].GetComponent<TweenScale>().Play();
+        }
+        for (int i = 5; i < tweenUI.Length; i++)
+        {
+            tweenUI[i].GetComponent<TweenPosition>().ResetToBeginning();
+            tweenUI[i].GetComponent<TweenPosition>().Play();
         }
     }
 
@@ -212,7 +246,9 @@ public class UIManager : MonoBehaviour {
         GameManager.instance.StateTransition(GameState.main);
         GameManager.instance.player.gameObject.SetActive(true);
         GameManager.instance.player.ChangePlayerType(0);
-        
+
+        BulletManager.instance.InitObjs();
+
         SoundManager.instance.PlayEffectSound(0);
     }
     public void ReplayButton()

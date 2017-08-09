@@ -18,6 +18,10 @@ public class ItemObj : MonoBehaviour {
     private void OnEnable()
     {
         offTime = 0f;
+        if (this.transform.tag.Equals("PowerUpItem"))
+        {
+            this.GetComponent<TweenScale>().ResetToBeginning();
+            this.GetComponent<TweenScale>().Play();        }
     }
 
     private void Update()

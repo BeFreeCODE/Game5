@@ -32,6 +32,16 @@ public class Store : MonoBehaviour
         levels[2] = GameManager.instance.blueLevel[selectNum];
     }
 
+    private void OnEnable()
+    {
+        player.GetPlayerJsonData();
+        arrow.transform.localPosition = new Vector3(-1000, -1500, 0);
+        selectNum = 0;
+        levels[0] = GameManager.instance.redLevel[selectNum];
+        levels[1] = GameManager.instance.greenLevel[selectNum];
+        levels[2] = GameManager.instance.blueLevel[selectNum];
+    }
+
     private void SelectPlayer()
     {
         if (Input.GetMouseButtonDown(0))
@@ -124,29 +134,41 @@ public class Store : MonoBehaviour
 
     public void DamageButton()
     {
-        if (GameManager.instance.redLevel[selectNum] < 4)
+        if (GameManager.instance.redCoin >= 100)
         {
-            GameManager.instance.redLevel[selectNum]++;
-            levels[0]++;
-            player.GetPlayerJsonData();
+            if (GameManager.instance.redLevel[selectNum] < 4)
+            {
+                GameManager.instance.redLevel[selectNum]++;
+                GameManager.instance.redCoin -= 100;
+                levels[0]++;
+                player.GetPlayerJsonData();
+            }
         }
     }
     public void MoveSpeedButton()
     {
-        if (GameManager.instance.greenLevel[selectNum] < 4)
+        if (GameManager.instance.blueCoin >= 100)
         {
-            GameManager.instance.greenLevel[selectNum]++;
-            levels[1]++;
-            player.GetPlayerJsonData();
+            if (GameManager.instance.greenLevel[selectNum] < 4)
+            {
+                GameManager.instance.greenLevel[selectNum]++;
+                GameManager.instance.blueCoin -= 100;
+                levels[1]++;
+                player.GetPlayerJsonData();
+            }
         }
     }
     public void FireSpeedButton()
     {
-        if (GameManager.instance.blueLevel[selectNum] < 4)
+        if (GameManager.instance.greenCoin >= 100)
         {
-            GameManager.instance.blueLevel[selectNum]++;
-            levels[2]++;
-            player.GetPlayerJsonData();
+            if (GameManager.instance.blueLevel[selectNum] < 4)
+            {
+                GameManager.instance.blueLevel[selectNum]++;
+                GameManager.instance.greenCoin -= 100;
+                levels[2]++;
+                player.GetPlayerJsonData();
+            }
         }
     }
 
@@ -169,7 +191,6 @@ public class Store : MonoBehaviour
         stoneLabel[0].text = GameManager.instance.redCoin.ToString();
         stoneLabel[1].text = GameManager.instance.blueCoin.ToString();
         stoneLabel[2].text = GameManager.instance.greenCoin.ToString();
-
     }
 
 }

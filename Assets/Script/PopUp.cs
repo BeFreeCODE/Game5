@@ -12,9 +12,11 @@ public class PopUp : MonoBehaviour {
 
             if(Physics.Raycast(ray.origin,ray.direction * 10f,out hit))
             {
-                Debug.Log(hit.collider.name);
                 if (hit.collider.transform.tag.Equals("PopUp"))
                 {
+                    this.GetComponent<TweenScale>().ResetToBeginning();
+                    this.GetComponent<TweenScale>().Play();
+
                     this.gameObject.SetActive(false);
                 }
             }

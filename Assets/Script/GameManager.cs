@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     public int redCoin, blueCoin, greenCoin;
     public int[] redLevel = new int[7];
     public int[] blueLevel = new int[7];
-    public int[] greenLevel = new int [7];
+    public int[] greenLevel = new int[7];
 
     //스테이지
     public int stageNum = 0;
@@ -40,6 +40,10 @@ public class GameManager : MonoBehaviour
 
     public bool enemyRend = false;
     private bool overState = false;
+
+    [SerializeField]
+    private GameObject quitPop;
+
 
     private void Awake()
     {
@@ -55,7 +59,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         //게임시작 시 시간정지
-        SetTimeScale(0f);
+        SetTimeScale(1f);
     }
 
     private void OnApplicationQuit()
@@ -110,9 +114,51 @@ public class GameManager : MonoBehaviour
     {
         curScore += num;
 
-        if(topScore <= curScore)
+        if (topScore <= curScore)
         {
             topScore = curScore;
+        }
+    }
+
+    public bool quitActive = false;
+
+    public void BackButton()
+    {
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            switch (GameManager.instance.curGameState)
+            {
+                case GameState.main:
+                    if (!quitActive)
+                    {
+                        quitPop.SetActive(true);
+                        quitActive = true;
+                    }
+                    break;
+                case GameState.game:
+                    break;
+                case GameState.over:
+                    break;
+                case GameState.ready:
+                    break;
+                case GameState.store:
+                    break;
+                case GameState.store2:
+                    break;
+            }
+        }
+    }
+    public void YesButton()
+    {
+        Application.Quit();
+    }
+    public void NoButton()
+    {
+        if (quitActive)
+        {
+            quitPop.SetActive(false);
+            quitActive = false;
         }
     }
 
@@ -122,7 +168,7 @@ public class GameManager : MonoBehaviour
         {
             case GameState.main:
                 curScore = 0;
-                overState = false;        
+                overState = false;
                 break;
             case GameState.game:
                 EnemyManager.instance.RendEnemy();
@@ -152,5 +198,6 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         Game();
+        BackButton();
     }
 }

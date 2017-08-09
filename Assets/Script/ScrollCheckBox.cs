@@ -20,7 +20,8 @@ public class ScrollCheckBox : MonoBehaviour {
     public bool buyState = false;
 
     public GameObject[] leverImage;
-    
+    public GameObject valve;
+
     int getCoin = 0;
     int randNum = 0;
 
@@ -34,6 +35,7 @@ public class ScrollCheckBox : MonoBehaviour {
         {
             buyTime += Time.deltaTime;
 
+            valve.GetComponent<TweenRotation>().enabled = true;
             homeButton.SetActive(false);
             grid.GetComponent<UIDragScrollView>().enabled = false;
 
@@ -41,6 +43,7 @@ public class ScrollCheckBox : MonoBehaviour {
             {
                 buyPop.SetActive(true);
 
+                valve.GetComponent<TweenRotation>().enabled = false;
                 leverImage[1].SetActive(false);
                 leverImage[0].SetActive(true);
 
@@ -54,10 +57,13 @@ public class ScrollCheckBox : MonoBehaviour {
 
     public void BuyButton()
     {
+
         if (!buyState)
         {
             if (GameManager.instance.coin >= 100 && LootNum >= 10)
             {
+                SoundManager.instance.PlayEffectSound(0);
+
                 GameManager.instance.coin -= 100;
                 GameObject effect = Instantiate(effectPrefab);
                 effect.transform.position = new Vector3(0, .5f, 0f);
@@ -89,6 +95,7 @@ public class ScrollCheckBox : MonoBehaviour {
 
                 DataManager.Instance.SetData();
 
+                SoundManager.instance.PlayEffectSound(11);
                 buyState = true;
             }
             else

@@ -39,15 +39,19 @@ public class TouchManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.instance.curGameState == GameState.store 
+        if (GameManager.instance.curGameState == GameState.store
             || GameManager.instance.curGameState == GameState.store2)
             return;
 
         cam.ZoomCamera(joyDrag);
         bloomCam.ZoomCamera(joyDrag);
 
-        PlayerMove();
         OnTouch();
+        if (GameManager.instance.curGameState == GameState.game 
+            || GameManager.instance.curGameState == GameState.ready)
+        {
+            PlayerMove();
+        }
     }
 
     private void Start()
@@ -113,7 +117,6 @@ public class TouchManager : MonoBehaviour
         //}
         //#else
         #endregion
-
         if (Input.touchCount > 0)
         {
             Touch[] _touch = Input.touches;

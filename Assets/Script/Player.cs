@@ -61,7 +61,7 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        GetPlayerJsonData(); 
+        GetPlayerJsonData();
     }
 
     private void Update()
@@ -78,7 +78,7 @@ public class Player : MonoBehaviour
                 speedTime += Time.deltaTime;
                 if (speedTime >= 5f)
                 {
-                    moveSpeed = 3f;
+                    moveSpeed -= 3f;
                     getSpeedItem = false;
                     speedTime = 0f;
                 }
@@ -131,6 +131,12 @@ public class Player : MonoBehaviour
         bulletDelayTime = GameManager.instance.jsonData.LoadData(playerType,
             GameManager.instance.blueLevel[playerType],
             "fireSpeed") * 0.1f;
+
+        //능력치 마스터시 효과 활성화
+        if(GameManager.instance.redLevel[playerType] >= 4)
+        {
+
+        }
     }
 
     //발사
@@ -246,6 +252,10 @@ public class Player : MonoBehaviour
         speedTime = 0f;
         magnetTime = 0f;
 
+        for (int i = 0; i < powerNum; i++)
+        {
+            RemoveDummy();
+        }
         //power level init
         powerGauge = 0;
         powerNum = 0;
@@ -356,7 +366,7 @@ public class Player : MonoBehaviour
             case "MoveItem":
                 getSpeedItem = true;
                 speedTime = 0f;
-                moveSpeed = 6f;
+                moveSpeed += 3f;
 
                 GetItem(0);
                 break;
@@ -367,6 +377,13 @@ public class Player : MonoBehaviour
                 break;
             //적충돌
             case "Enemy":
+                //보스 충돌시 레벨에 관련없이 over
+                if (other.transform.GetComponent<Enemy>().enemyType == EnemyType.boss)
+                {
+                    GameManager.instance.StateTransition(GameState.over);
+                    break;
+                }
+
                 if (powerNum > 0)
                 {
                     powerGauge = 0;
