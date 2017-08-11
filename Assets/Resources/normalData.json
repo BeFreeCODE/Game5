@@ -4,35 +4,35 @@
             "type": "normal",
             "level": 1,
             "damage": 1,
-            "moveSpeed": 3,
+            "moveSpeed": 1.0,
             "fireSpeed": 5
         },
         {
             "type": "normal",
             "level": 2,
             "damage": 2,
-            "moveSpeed": 4,
+            "moveSpeed": 1.2,
             "fireSpeed": 4
         },
         {
             "type": "normal",
             "level": 3,
             "damage": 3,
-            "moveSpeed": 5,
+            "moveSpeed": 1.5,
             "fireSpeed": 3
         },
         {
             "type": "normal",
             "level": 4,
             "damage": 4,
-            "moveSpeed": 6,
+            "moveSpeed": 1.7,
             "fireSpeed": 2
         },
         {
             "type": "normal",
             "level": 5,
             "damage": 5,
-            "moveSpeed": 7,
+            "moveSpeed": 2.0,
             "fireSpeed": 1
         }
     ]

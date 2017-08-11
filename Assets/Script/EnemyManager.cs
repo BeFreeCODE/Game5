@@ -11,7 +11,7 @@ public class EnemyManager : ObjectManager
     private float rendDeleyTime = 1f;
 
     //적 Tpye에따른 시간
-    private float normalTime = 0f, speederTime = 0f, tankerTime = 0f, laserTime = 0f;
+    private float normalTime = 0f, speederTime = 0f, tankerTime = 0f, laserTime = 0f, circleTime = 0f;
     private float x, y;
 
     [SerializeField]
@@ -19,17 +19,21 @@ public class EnemyManager : ObjectManager
 
     [SerializeField]
     private GameObject warningMark;
+    public GameObject bossWarningLabel;
 
     private List<GameObject> warningList = new List<GameObject>();
 
     public Camera uiCam;
-
+    private SmoothCamera mainCam;
+    
     public bool bossState = false;
 
     private void Awake()
     {
         if (instance == null)
             instance = this;
+
+        mainCam = GameObject.Find("Main Camera").GetComponent<SmoothCamera>();
     }
 
     private void Start()
@@ -57,6 +61,9 @@ public class EnemyManager : ObjectManager
         speederTime = 0f;
         tankerTime = 0f;
         laserTime = 0f;
+        circleTime = 0f;
+
+        bossWarningLabel.SetActive(false);
     }
 
     //Warning 오브젝트
@@ -90,6 +97,7 @@ public class EnemyManager : ObjectManager
             speederTime += Time.deltaTime;
             tankerTime += Time.deltaTime;
             laserTime += Time.deltaTime;
+            circleTime += Time.deltaTime;
 
             //Enemy 타입별로 시간비율설정
             if (normalTime >= rendDeleyTime)
@@ -142,6 +150,7 @@ public class EnemyManager : ObjectManager
             }
             if (laserTime >= rendDeleyTime * 10f)
             {
+                SoundManager.instance.PlayEffectSound(12);
                 int repeatNum = Random.Range(1, 6);
                 int dirNum = Random.Range(1, 5);
 
@@ -172,6 +181,8 @@ public class EnemyManager : ObjectManager
 
                                     warning.GetComponent<TweenScale>().ResetToBeginning();
                                     warning.GetComponent<TweenScale>().delay = -0.02f * j;
+                                    warning.GetComponent<TweenScale>().from = new Vector3(0, 0, 1);
+                                    warning.GetComponent<TweenScale>().to = new Vector3(0.5f, 0.5f, 1);
                                     warning.GetComponent<TweenScale>().Play();
                                     warning.SetActive(true);
                                 }
@@ -267,6 +278,52 @@ public class EnemyManager : ObjectManager
                     }
                 }
             }
+            if (circleTime >= rendDeleyTime * 15f)
+            {
+                SoundManager.instance.PlayEffectSound(12);
+
+                SetRandomPos();
+
+                for (int i = 0; i < 30; i++)
+                {
+                    GameObject newEnemy = GetObj();
+                   
+                    if(i == 0)
+                    {
+                        GameObject _warning = GetWarning();
+
+                        if(_warning)
+                        {
+                            _warning.transform.position = new Vector3(x, y, 0) 
+                                + ((player.transform.position - new Vector3(x, y, 0)) * 0.3f);
+
+                            _warning.GetComponent<TweenScale>().ResetToBeginning();
+                            _warning.GetComponent<TweenScale>().from = new Vector3(0, 0, 1);
+                            _warning.GetComponent<TweenScale>().to = new Vector3(2f, 2f, 1);
+                            _warning.GetComponent<TweenScale>().Play();
+                            _warning.SetActive(true);
+                        }
+                    }
+                    else
+                    {
+                        if (newEnemy)
+                        {
+                            newEnemy.transform.position
+                                = newEnemy.GetComponent<Enemy>().circleStandard
+                                = new Vector3(x , y, 0) + ((player.transform.position - new Vector3(x,y,0)) * 0.3f);
+                            newEnemy.GetComponent<Enemy>().SetType(EnemyType.circle);
+                            newEnemy.GetComponent<Enemy>().circleDelay = (i + 3) * .2f;
+                            newEnemy.GetComponent<Enemy>().renderer.enabled = false;
+                            newEnemy.SetActive(true);
+                        }
+                    }
+                
+                    if(i == 9)
+                    {
+                        circleTime = 0f;
+                    }
+                }
+            }
         }
 
         //Boss
@@ -278,6 +335,13 @@ public class EnemyManager : ObjectManager
 
                 if (newEnemy)
                 {
+                    //보스 경고
+                    bossWarningLabel.GetComponent<TweenPosition>().ResetToBeginning();
+                    bossWarningLabel.GetComponent<TweenPosition>().Play();
+                    bossWarningLabel.SetActive(true);
+
+                    mainCam.OnBlur();
+
                     //위치지정
                     SetRandomPos();
                     newEnemy.transform.position = new Vector3(x, y, 0);
@@ -303,7 +367,7 @@ public class EnemyManager : ObjectManager
 
                 GameManager.instance.stageNum++;
                 GameManager.instance.stageCurTime = 0f;
-                GameManager.instance.stageLimitTime += 10f;
+                GameManager.instance.stageLimitTime += 5f;
 
                 //적이 없을시(스테이지 클리어시) ready 상태로 전환
                 GameManager.instance.StateTransition(GameState.ready);

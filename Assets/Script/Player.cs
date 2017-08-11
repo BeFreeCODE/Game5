@@ -53,6 +53,8 @@ public class Player : MonoBehaviour
     private float dummyRotTime = 0f;
     private float dummyRotSpeed = 4f;
 
+    public GameObject masterEffect;
+
     private void Awake()
     {
         fireDirection = Vector3.up;
@@ -123,19 +125,31 @@ public class Player : MonoBehaviour
     public void GetPlayerJsonData()
     {
         Damage = GameManager.instance.jsonData.LoadData(playerType,
-            GameManager.instance.redLevel[playerType],
-            "damage");
-        moveSpeed = GameManager.instance.jsonData.LoadData(playerType,
-            GameManager.instance.greenLevel[playerType],
-            "moveSpeed");
+            GameManager.instance.redLevel[playerType]).damage;
+
+        //이동속도 고정으로 수정
+        moveSpeed = 3;
+
         bulletDelayTime = GameManager.instance.jsonData.LoadData(playerType,
-            GameManager.instance.blueLevel[playerType],
-            "fireSpeed") * 0.1f;
+            GameManager.instance.blueLevel[playerType]).fireSpeed * 0.1f;
+
+        //기존 이동속도 데이터를 총알크기로 수정
+        BulletManager.instance.bulletScale = GameManager.instance.jsonData.LoadData(playerType,
+            GameManager.instance.greenLevel[playerType]).moveSpeed;
 
         //능력치 마스터시 효과 활성화
-        if(GameManager.instance.redLevel[playerType] >= 4)
+        if (masterEffect != null)
         {
-
+            if (GameManager.instance.redLevel[playerType] >= 4
+            && GameManager.instance.greenLevel[playerType] >= 4
+            && GameManager.instance.greenLevel[playerType] >= 4)
+            {
+                masterEffect.gameObject.SetActive(true);
+            }
+            else
+            {
+                masterEffect.gameObject.SetActive(false);
+            }
         }
     }
 

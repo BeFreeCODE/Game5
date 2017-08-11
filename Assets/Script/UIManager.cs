@@ -160,6 +160,7 @@ public class UIManager : MonoBehaviour {
         }
         else
         {
+            stageTime.color = Color.white;
             stageTime.fillAmount = (GameManager.instance.stageLimitTime - GameManager.instance.stageCurTime) / GameManager.instance.stageLimitTime;
         }
         tweenUI[3].GetComponent<UILabel>().text = (GameManager.instance.stageNum + 1).ToString();
@@ -271,10 +272,14 @@ public class UIManager : MonoBehaviour {
             overButtons[i].GetComponent<TweenPosition>().ResetToBeginning();
         }
         #endregion
-        GameManager.instance.player.gameObject.SetActive(true);
         GameManager.instance.curScore = 0;
         GameManager.instance.StateTransition(GameState.game);
+        GameManager.instance.player.gameObject.SetActive(true);
+        GameManager.instance.player.ChangePlayerType(0);
 
+        BulletManager.instance.InitObjs();
+
+        SoundManager.instance.PlayBGMSound();
         SoundManager.instance.PlayEffectSound(0);
     }
     public void StoreButton()

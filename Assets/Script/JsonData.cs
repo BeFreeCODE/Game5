@@ -10,7 +10,7 @@ public class StatData
     public string type;
     public int level;
     public int damage;
-    public int moveSpeed;
+    public float moveSpeed;
     public int fireSpeed;
 }
 
@@ -74,21 +74,25 @@ public class JsonData : MonoBehaviour
     }
 
     //type,level,필요 data별로 return
-    public int LoadData(int _type, int level, string data)
+    public StatData LoadData(int _type, int level)
     {
+        //json 문자열
         string json;
 
         StatData[] statData = null;
 
         if (Application.platform == RuntimePlatform.Android)
         {
+            //path에 있는 파일을 json문자열에 저장
             json = androidPath[_type].ToString();
 
+            //문자열을 json 형식으로 전환
             statData = JsonHelper.FromJson<StatData>(json);
         }
         else if (Application.platform == RuntimePlatform.IPhonePlayer)
         {
-
+            json = androidPath[_type].ToString();
+            statData = JsonHelper.FromJson<StatData>(json);
         }
         else
         {
@@ -97,19 +101,7 @@ public class JsonData : MonoBehaviour
             statData = JsonHelper.FromJson<StatData>(json);
         }
 
-        switch (data)
-        {
-            case "damage":
-                return statData[level].damage;
-                break;
-            case "moveSpeed":
-                return statData[level].moveSpeed;
-                break;
-            case "fireSpeed":
-                return statData[level].fireSpeed;
-                break;
-        }
+        return statData[level];
 
-        return 0;
     }
 }

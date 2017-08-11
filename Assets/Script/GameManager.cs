@@ -106,7 +106,6 @@ public class GameManager : MonoBehaviour
     public void StateTransition(GameState _state)
     {
         curGameState = _state;
-
     }
 
     //점수획득
@@ -191,6 +190,9 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.store2:
                 SetTimeScale(1);
+                break;
+            case GameState.ready:
+                BulletManager.instance.InitObjs();
                 break;
         }
     }

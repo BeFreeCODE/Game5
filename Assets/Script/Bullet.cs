@@ -30,8 +30,8 @@ public class Bullet : MonoBehaviour
 
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserWidth = 1f;
-            this.transform.localScale = new Vector3(laserWidth, 10f, 1f);
+            laserWidth = BulletManager.instance.bulletScale;
+            this.transform.localScale = new Vector3(laserWidth, laserWidth * 10f, 1f);
         }
     }
 
@@ -61,7 +61,7 @@ public class Bullet : MonoBehaviour
         //레이저일떄
         if (thisType == BulletManager.bulletType.laser)
         {
-            laserWidth -= Time.deltaTime * 5f;
+            laserWidth -= Time.deltaTime * 5f * BulletManager.instance.bulletScale;
             this.transform.localScale = new Vector3(laserWidth, 20f, 1f);
 
             if (laserWidth <= 0f)
@@ -149,6 +149,12 @@ public class Bullet : MonoBehaviour
     {
         if (other.transform.tag.Equals("Enemy"))
         {
+            if(other.transform.GetComponent<Enemy>().enemyType == EnemyType.circle
+                || other.transform.GetComponent<Enemy>().enemyType == EnemyType.laser)
+            {
+                return;
+            }
+
             if(this.thisType == BulletManager.bulletType.bounce)
             {
                 bounceNum--;

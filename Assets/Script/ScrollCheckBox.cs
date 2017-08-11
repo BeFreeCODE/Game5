@@ -100,6 +100,8 @@ public class ScrollCheckBox : MonoBehaviour {
             }
             else
             {
+                SoundManager.instance.PlayEffectSound(13);
+
                 this.GetComponent<CameraShake>().shake = .5f;
                 Debug.Log("not enough coin");
             }
