@@ -9,6 +9,7 @@ public class Store : MonoBehaviour
 
     public Player player;
 
+    public GameObject masterEffect;
     public GameObject arrow;
     private GameObject target;
 
@@ -16,12 +17,14 @@ public class Store : MonoBehaviour
     public int selectNum = 0;
 
     public int[] levels = new int[3];
+    public int[] price = new int[3];
 
     public GameObject[] damageGraphs = new GameObject[5];
     public GameObject[] moveSpeedGraphs = new GameObject[5];
     public GameObject[] fireSpeedGraphs = new GameObject[5];
 
     public UILabel[] stoneLabel = new UILabel[3];
+    public UILabel[] priceLabel = new UILabel[3];
 
     private void Start()
     {
@@ -30,6 +33,8 @@ public class Store : MonoBehaviour
         levels[0] = GameManager.instance.redLevel[selectNum];
         levels[1] = GameManager.instance.greenLevel[selectNum];
         levels[2] = GameManager.instance.blueLevel[selectNum];
+
+        SetPrice();
     }
 
     private void OnEnable()
@@ -40,6 +45,23 @@ public class Store : MonoBehaviour
         levels[0] = GameManager.instance.redLevel[selectNum];
         levels[1] = GameManager.instance.greenLevel[selectNum];
         levels[2] = GameManager.instance.blueLevel[selectNum];
+
+        mEffectActive();
+        SetPrice();
+    }
+
+    private void mEffectActive()
+    {
+        if (levels[0] >= 4
+            && levels[1] >= 4
+            && levels[2] >= 4)
+        {
+            masterEffect.SetActive(true);
+        }
+        else
+        {
+            masterEffect.SetActive(false);
+        }
     }
 
     private void SelectPlayer()
@@ -102,6 +124,10 @@ public class Store : MonoBehaviour
                     levels[1] = GameManager.instance.greenLevel[selectNum];
                     levels[2] = GameManager.instance.blueLevel[selectNum];
                 }
+
+                mEffectActive();
+
+                SetPrice();
             }
         }
     }
@@ -134,41 +160,74 @@ public class Store : MonoBehaviour
 
     public void DamageButton()
     {
-        if (GameManager.instance.redCoin >= 100)
+        if (GameManager.instance.redCoin >= price[0])
         {
             if (GameManager.instance.redLevel[selectNum] < 4)
             {
+                SoundManager.instance.PlayEffectSound(14);
+
                 GameManager.instance.redLevel[selectNum]++;
-                GameManager.instance.redCoin -= 100;
+                GameManager.instance.redCoin -= price[0];
                 levels[0]++;
                 player.GetPlayerJsonData();
+                SetPrice();
             }
+        }
+        else
+        {
+            SoundManager.instance.PlayEffectSound(13);
         }
     }
     public void MoveSpeedButton()
     {
-        if (GameManager.instance.blueCoin >= 100)
+        if (GameManager.instance.blueCoin >= price[1])
         {
             if (GameManager.instance.greenLevel[selectNum] < 4)
             {
+                SoundManager.instance.PlayEffectSound(14);
+
                 GameManager.instance.greenLevel[selectNum]++;
-                GameManager.instance.blueCoin -= 100;
+                GameManager.instance.blueCoin -= price[1];
                 levels[1]++;
                 player.GetPlayerJsonData();
+                SetPrice();
             }
+        }
+        else
+        {
+            SoundManager.instance.PlayEffectSound(13);
         }
     }
     public void FireSpeedButton()
     {
-        if (GameManager.instance.greenCoin >= 100)
+        if (GameManager.instance.greenCoin >= price[2])
         {
             if (GameManager.instance.blueLevel[selectNum] < 4)
             {
+                SoundManager.instance.PlayEffectSound(14);
+
                 GameManager.instance.blueLevel[selectNum]++;
-                GameManager.instance.greenCoin -= 100;
+                GameManager.instance.greenCoin -= price[2];
                 levels[2]++;
                 player.GetPlayerJsonData();
+                SetPrice();
             }
+        }
+        else
+        {
+            SoundManager.instance.PlayEffectSound(13);
+        }
+    }
+
+    public void SetPrice()
+    {
+        price[0] = GameManager.instance.jsonData.LoadStoreData(GameManager.instance.redLevel[selectNum]).damagePrice;
+        price[1] = GameManager.instance.jsonData.LoadStoreData(GameManager.instance.greenLevel[selectNum]).moveSpeedPrice;
+        price[2] = GameManager.instance.jsonData.LoadStoreData(GameManager.instance.blueLevel[selectNum]).fireSpeedPrice;
+
+        for (int i = 0; i < 3; i++)
+        {
+            priceLabel[i].text = price[i].ToString();
         }
     }
 

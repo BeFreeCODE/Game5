@@ -25,6 +25,7 @@ public class SmoothCamera : MonoBehaviour
 
     private void LateUpdate()
     {
+        //상점 카메라
         if (GameManager.instance.curGameState == GameState.store
             || GameManager.instance.curGameState == GameState.store2)
         {
@@ -60,15 +61,15 @@ public class SmoothCamera : MonoBehaviour
     //Zoom
     public void ZoomCamera(bool _state)
     {
-        if (!_state)
-        {
-            if (myCam.orthographicSize >= 4f)
-                myCam.orthographicSize -= .02f;
-        }
-        else
+        if (_state)
         {
             if (myCam.orthographicSize <= 6f)
                 myCam.orthographicSize += .05f;
+        }
+        else
+        {
+            if (myCam.orthographicSize >= 4f)
+                myCam.orthographicSize -= .02f;
         }
 
         float blurSize = myCam.orthographicSize * 0.2f;

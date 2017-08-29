@@ -54,6 +54,43 @@ public class Player : MonoBehaviour
     private float dummyRotSpeed = 4f;
 
     public GameObject masterEffect;
+    public GameObject starEffect;
+    public GameObject getCoinLabel;
+ 
+    //플레이어 초기화
+    public void InitPlayer()
+    {
+        //위치
+        this.transform.position = Vector3.zero;
+
+        //방향
+        this.transform.localRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
+
+        //이동, 발사속도,Dmage
+        GetPlayerJsonData();
+
+        //버프해제
+        getMagnetItem = false;
+        getSpeedItem = false;
+        speedTime = 0f;
+        magnetTime = 0f;
+
+        for (int i = 0; i < powerNum; i++)
+        {
+            RemoveDummy();
+        }
+
+        //power level init
+        gaugeState = false;
+        powerGauge = 0;
+        powerNum = 0;
+
+        limit = 0;
+
+        dummyNum = 0;
+
+        this.gameObject.SetActive(false);
+    }
 
     private void Awake()
     {
@@ -95,7 +132,6 @@ public class Player : MonoBehaviour
                     magnetTime = 0f;
                 }
             }
-            #endregion
 
             //powerItem습득시
             if (gaugeState)
@@ -113,10 +149,10 @@ public class Player : MonoBehaviour
                     RemoveDummy();
                     powerNum--;
                     maxGauge -= 10;
-                    powerGauge = maxGauge - 10;
+                    powerGauge = maxGauge - 30;
                 }
             }
-
+            #endregion
         }
     }
 
@@ -248,37 +284,6 @@ public class Player : MonoBehaviour
         this.transform.LookAt(lookDirection);
     }
 
-    //플레이어 초기화
-    public void InitPlayer()
-    {
-        //위치
-        this.transform.position = Vector3.zero;
-
-        //방향
-        this.transform.localRotation = Quaternion.Euler(new Vector3(-90, 0, 0));
-
-        //이동, 발사속도,Dmage
-        GetPlayerJsonData();
-
-        //버프해제
-        getMagnetItem = false;
-        getSpeedItem = false;
-        speedTime = 0f;
-        magnetTime = 0f;
-
-        for (int i = 0; i < powerNum; i++)
-        {
-            RemoveDummy();
-        }
-        //power level init
-        powerGauge = 0;
-        powerNum = 0;
-
-        dummyNum = 0;
-
-        this.gameObject.SetActive(false);
-    }
-
     //비행기 타입 변경
     public void ChangePlayerType(int _typeNum)
     {
@@ -367,7 +372,8 @@ public class Player : MonoBehaviour
 
         if (other.transform.tag.Equals("Bullet")
             || other.transform.tag.Equals("Warning")
-            || other.transform.tag.Equals("BobmEffect"))
+            || other.transform.tag.Equals("BobmEffect")
+            || other.transform.tag.Equals("Fever"))
             return;
 
         switch (other.transform.tag)
@@ -400,6 +406,7 @@ public class Player : MonoBehaviour
 
                 if (powerNum > 0)
                 {
+                    SoundManager.instance.PlayEffectSound(19);
                     powerGauge = 0;
                 }
                 else
@@ -441,16 +448,47 @@ public class Player : MonoBehaviour
                         ChangePlayerType(6);
                         break;
                     case GetBox.boxType.coin:
-                        GameManager.instance.coin += Random.Range(50, 500);
-                        break;
+                        SoundManager.instance.PlayEffectSound(18);
 
+                        int getCoinNum = (GameManager.instance.stageNum * Random.Range(30, 101));
+
+                        GameManager.instance.coin += getCoinNum;
+
+                        ShowGetCoin(getCoinNum,this.transform.position);
+                        break;
                 }
 
                 GameManager.instance.StateTransition(GameState.game);
                 break;
+            case "StarItem":
+                SoundManager.instance.PlayEffectSound(16);
+
+                GameObject _starEffect = Instantiate(starEffect);
+                _starEffect.transform.position = this.transform.position;
+                _starEffect.GetComponent<TweenScale>().ResetToBeginning();
+                _starEffect.GetComponent<TweenScale>().Play();
+                _starEffect.SetActive(true);
+
+                ItemManager.instance.RendFever();
+                break;
         }
 
         other.transform.gameObject.SetActive(false);
+    }
+
+    private void ShowGetCoin(int _coin, Vector3 pos)
+    {
+        GameObject newlabel = Instantiate(getCoinLabel);
+
+        newlabel.transform.localScale = new Vector3(1, 1, 1);
+        newlabel.transform.position = pos;
+
+        newlabel.transform.FindChild("label").GetComponent<UILabel>().text = "+" + _coin;
+
+        newlabel.GetComponent<TweenPosition>().from = pos;
+        newlabel.GetComponent<TweenPosition>().to = pos + (Vector3.up * 1f);
+
+        Destroy(newlabel, 1f);
     }
 
     //아이템 획득

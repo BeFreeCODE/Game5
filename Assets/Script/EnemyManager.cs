@@ -26,7 +26,15 @@ public class EnemyManager : ObjectManager
     public Camera uiCam;
     private SmoothCamera mainCam;
     
+    
+    public GameObject bossHpObj;
+    public UISprite bossHpBar;
+    public UISprite bossImage;
+
     public bool bossState = false;
+    public float bossCurLife;
+    public float bossTotalLife;
+
 
     private void Awake()
     {
@@ -64,6 +72,7 @@ public class EnemyManager : ObjectManager
         circleTime = 0f;
 
         bossWarningLabel.SetActive(false);
+        bossHpObj.SetActive(false);
     }
 
     //Warning 오브젝트
@@ -100,54 +109,109 @@ public class EnemyManager : ObjectManager
             circleTime += Time.deltaTime;
 
             //Enemy 타입별로 시간비율설정
-            if (normalTime >= rendDeleyTime)
+            if (GameManager.instance.stageNum <= 8)
             {
-                GameObject newEnemy = GetObj();
-
-                if (newEnemy)
+                if (normalTime >= rendDeleyTime - (GameManager.instance.stageNum * 0.1f))
                 {
-                    //위치지정
-                    SetRandomPos();
-                    newEnemy.transform.position = new Vector3(x, y, 0);
+                    GameObject newEnemy = GetObj();
 
-                    newEnemy.GetComponent<Enemy>().SetType(EnemyType.normal);
-                    newEnemy.SetActive(true);
+                    if (newEnemy)
+                    {
+                        //위치지정
+                        SetRandomPos();
+                        newEnemy.transform.position = new Vector3(x, y, 0);
 
-                    normalTime = 0f;
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.normal);
+                        newEnemy.SetActive(true);
+
+                        normalTime = 0f;
+                    }
+                }
+                if (speederTime >= (rendDeleyTime * 3f) - (GameManager.instance.stageNum * 0.1f))
+                {
+                    GameObject newEnemy = GetObj();
+
+                    if (newEnemy)
+                    {
+                        //위치지정
+                        SetRandomPos();
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.speeder);
+                        newEnemy.SetActive(true);
+
+                        speederTime = 0f;
+                    }
+                }
+                if (tankerTime >= (rendDeleyTime * 2f) - (GameManager.instance.stageNum * 0.1f))
+                {
+                    GameObject newEnemy = GetObj();
+
+                    if (newEnemy)
+                    {
+                        //위치지정
+                        SetRandomPos();
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.tanker);
+                        newEnemy.SetActive(true);
+
+                        tankerTime = 0f;
+                    }
                 }
             }
-            if (speederTime >= rendDeleyTime * 3f)
+            else
             {
-                GameObject newEnemy = GetObj();
-
-                if (newEnemy)
+                if (normalTime >= 0.2f)
                 {
-                    //위치지정
-                    SetRandomPos();
-                    newEnemy.transform.position = new Vector3(x, y, 0);
+                    GameObject newEnemy = GetObj();
 
-                    newEnemy.GetComponent<Enemy>().SetType(EnemyType.speeder);
-                    newEnemy.SetActive(true);
+                    if (newEnemy)
+                    {
+                        //위치지정
+                        SetRandomPos();
+                        newEnemy.transform.position = new Vector3(x, y, 0);
 
-                    speederTime = 0f;
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.normal);
+                        newEnemy.SetActive(true);
+
+                        normalTime = 0f;
+                    }
+                }
+                if (speederTime >= 0.6f)
+                {
+                    GameObject newEnemy = GetObj();
+
+                    if (newEnemy)
+                    {
+                        //위치지정
+                        SetRandomPos();
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.speeder);
+                        newEnemy.SetActive(true);
+
+                        speederTime = 0f;
+                    }
+                }
+                if (tankerTime >= 0.4f)
+                {
+                    GameObject newEnemy = GetObj();
+
+                    if (newEnemy)
+                    {
+                        //위치지정
+                        SetRandomPos();
+                        newEnemy.transform.position = new Vector3(x, y, 0);
+
+                        newEnemy.GetComponent<Enemy>().SetType(EnemyType.tanker);
+                        newEnemy.SetActive(true);
+
+                        tankerTime = 0f;
+                    }
                 }
             }
-            if (tankerTime >= rendDeleyTime * 2f)
-            {
-                GameObject newEnemy = GetObj();
-
-                if (newEnemy)
-                {
-                    //위치지정
-                    SetRandomPos();
-                    newEnemy.transform.position = new Vector3(x, y, 0);
-
-                    newEnemy.GetComponent<Enemy>().SetType(EnemyType.tanker);
-                    newEnemy.SetActive(true);
-
-                    tankerTime = 0f;
-                }
-            }
+          
             if (laserTime >= rendDeleyTime * 10f)
             {
                 SoundManager.instance.PlayEffectSound(12);
@@ -278,7 +342,7 @@ public class EnemyManager : ObjectManager
                     }
                 }
             }
-            if (circleTime >= rendDeleyTime * 15f)
+            if (circleTime >= rendDeleyTime * 14f)
             {
                 SoundManager.instance.PlayEffectSound(12);
 
@@ -329,17 +393,25 @@ public class EnemyManager : ObjectManager
         //Boss
         else
         {
+            bossHpBar.fillAmount = bossCurLife / bossTotalLife;
             if (!bossState)
             {
                 GameObject newEnemy = GetObj();
 
                 if (newEnemy)
                 {
+                    SoundManager.instance.PlayEffectSound(15);
+
                     //보스 경고
                     bossWarningLabel.GetComponent<TweenPosition>().ResetToBeginning();
                     bossWarningLabel.GetComponent<TweenPosition>().Play();
                     bossWarningLabel.SetActive(true);
 
+                    //보스 HpBar
+                    bossHpObj.GetComponent<TweenPosition>().ResetToBeginning();
+                    bossHpObj.GetComponent<TweenPosition>().Play();
+                    bossHpObj.SetActive(true);
+           
                     mainCam.OnBlur();
 
                     //위치지정
@@ -348,6 +420,30 @@ public class EnemyManager : ObjectManager
 
                     newEnemy.GetComponent<Enemy>().SetType(EnemyType.boss);
                     newEnemy.SetActive(true);
+
+                    //bossHpBar Boss Image
+                    switch (newEnemy.GetComponent<Enemy>().bossImageNum)
+                    {
+                        case 0:
+                            bossImage.spriteName = "boss1";
+                            break;
+                        case 1:
+                            bossImage.spriteName = "boss2";
+                            break;
+                        case 2:
+                            bossImage.spriteName = "boss3";
+                            break;
+                        case 3:
+                            bossImage.spriteName = "boss4";
+                            break;
+                        case 4:
+                            bossImage.spriteName = "boss5";
+                            break;
+                        case 5:
+                            bossImage.spriteName = "boss6";
+                            break;
+
+                    }
 
                     bossState = true;
                 }
@@ -368,6 +464,11 @@ public class EnemyManager : ObjectManager
                 GameManager.instance.stageNum++;
                 GameManager.instance.stageCurTime = 0f;
                 GameManager.instance.stageLimitTime += 5f;
+
+                //StarItem
+                ItemManager.instance.RendStarItem(Random.Range(5,GameManager.instance.stageLimitTime));
+
+                bossHpObj.SetActive(false);
 
                 //적이 없을시(스테이지 클리어시) ready 상태로 전환
                 GameManager.instance.StateTransition(GameState.ready);

@@ -45,6 +45,8 @@ public class UIManager : MonoBehaviour {
     [SerializeField]
     private UISprite stageTime;
 
+    public GameObject[] curton;
+
     private void Update()
     {
         UIState(GameManager.instance.curGameState);
@@ -81,7 +83,10 @@ public class UIManager : MonoBehaviour {
                 tweenUI[1].GetComponent<TweenScale>().Play();
                 tweenUI[2].GetComponent<TweenScale>().Play();
                 tweenUI[3].GetComponent<TweenScale>().Play();
-
+                curton[0].GetComponent<TweenPosition>().ResetToBeginning();
+                curton[0].GetComponent<TweenPosition>().Play();
+                curton[1].GetComponent<TweenPosition>().ResetToBeginning();
+                curton[1].GetComponent<TweenPosition>().Play();
                 RendGauge();
                 break;
             case GameState.over:
@@ -111,6 +116,10 @@ public class UIManager : MonoBehaviour {
 
                 fade[0].GetComponent<TweenAlpha>().ResetToBeginning();
                 fade[0].GetComponent<TweenAlpha>().Play();
+                curton[0].GetComponent<TweenPosition>().ResetToBeginning();
+                curton[0].GetComponent<TweenPosition>().Play();
+                curton[1].GetComponent<TweenPosition>().ResetToBeginning();
+                curton[1].GetComponent<TweenPosition>().Play();
                 break;
             case GameState.store2:
                 gameStateUI[0].SetActive(false);
@@ -124,6 +133,10 @@ public class UIManager : MonoBehaviour {
 
                 fade[0].GetComponent<TweenAlpha>().ResetToBeginning();
                 fade[0].GetComponent<TweenAlpha>().Play();
+                curton[0].GetComponent<TweenPosition>().ResetToBeginning();
+                curton[0].GetComponent<TweenPosition>().Play();
+                curton[1].GetComponent<TweenPosition>().ResetToBeginning();
+                curton[1].GetComponent<TweenPosition>().Play();
                 break;
         }
         RendText();

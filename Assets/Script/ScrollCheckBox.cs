@@ -25,12 +25,18 @@ public class ScrollCheckBox : MonoBehaviour {
     int getCoin = 0;
     int randNum = 0;
 
+    int price;
+
+    public UILabel priceLabel;
+
     private void Update()
     {
+        priceLabel.text = price.ToString();
         LootLabel.text = LootNum.ToString();
         getCoinLabel.GetComponent<UILabel>().text = getCoin.ToString();
         haveCoin.text = GameManager.instance.coin.ToString();
 
+        //구입버튼 눌렀을때
         if (buyState)
         {
             buyTime += Time.deltaTime;
@@ -41,6 +47,7 @@ public class ScrollCheckBox : MonoBehaviour {
 
             if(buyTime >= 5f)
             {
+                SoundManager.instance.PlayEffectSound(14);
                 buyPop.SetActive(true);
 
                 valve.GetComponent<TweenRotation>().enabled = false;
@@ -57,7 +64,6 @@ public class ScrollCheckBox : MonoBehaviour {
 
     public void BuyButton()
     {
-
         if (!buyState)
         {
             if (GameManager.instance.coin >= 100 && LootNum >= 10)
@@ -122,16 +128,19 @@ public class ScrollCheckBox : MonoBehaviour {
         switch(other.transform.name)
         {
             case "1":
+                price = 100;
                 LootNum = GameManager.instance.redLoot;
                 buyImage.spriteName = "enemy";
                 buyImage2.spriteName = "stone";
                 break;
             case "2":
+                price = 150;
                 LootNum = GameManager.instance.blueLoot;
                 buyImage.spriteName = "enemy2";
                 buyImage2.spriteName = "stone3";
                 break;
             case "3":
+                price = 300;
                 LootNum = GameManager.instance.greenLoot;
                 buyImage.spriteName = "enemy3";
                 buyImage2.spriteName = "stone2";

@@ -39,7 +39,7 @@ public class Homing : MonoBehaviour
         destroyTime += Time.deltaTime;
         homingDelay += Time.deltaTime;
 
-        if (destroyTime >= 5f)
+        if (destroyTime >= 8f)
         {
             this.gameObject.SetActive(false);
             destroyTime = 0f;

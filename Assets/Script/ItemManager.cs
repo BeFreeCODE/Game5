@@ -16,6 +16,9 @@ public class ItemManager : ObjectManager
 
     public List<GameObject> boxItems = new List<GameObject>();
 
+    public GameObject starItem;
+    public GameObject fever;
+
     private void Awake()
     {
         if(instance == null)
@@ -95,4 +98,27 @@ public class ItemManager : ObjectManager
         }
     }
 
+    public void RendStarItem(float _time)
+    {
+        Invoke("ActiveStar",_time);
+    }
+    public void RendFever()
+    {
+        Invoke("ActiveFever", 1.6f);
+    }
+
+    public void ActiveStar()
+    {
+        SetPos();
+        
+        if(starItem)
+        starItem.transform.position = new Vector3(x, y, 0);
+        starItem.SetActive(true);
+    }   
+
+    void ActiveFever()
+    {
+        fever.GetComponent<Fever>().fever = true;
+        SoundManager.instance.PlayEffectSound(17);
+    }
 }

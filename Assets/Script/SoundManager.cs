@@ -8,8 +8,14 @@ public class SoundManager : MonoBehaviour {
     public AudioClip bgmSound;
 
     private AudioSource effectAudio;
-    [SerializeField]
-    private AudioSource bgmAudio;
+
+    public AudioSource bgmAudio;
+
+    //Sound On,Off
+    public int SoundState = 0;
+    public GameObject soundButton;
+    public GameObject muteButton;
+
 
     private void Awake()
     {
@@ -20,6 +26,17 @@ public class SoundManager : MonoBehaviour {
     private void Start()
     {
         effectAudio = this.GetComponent<AudioSource>();
+
+        SoundState = PlayerPrefs.GetInt("SOUND");
+
+        if(SoundState == 0)
+        {
+            SoundOn();
+        }
+        else
+        {
+            SoundOff();
+        }
     }
 
     public void PlayEffectSound(int _num)
@@ -29,7 +46,7 @@ public class SoundManager : MonoBehaviour {
  
     public void PlayBGMSound()
     {
-        bgmAudio.PlayOneShot(bgmSound);
+        bgmAudio.Play();
     }
 
     public void StopBGMSound()
@@ -37,4 +54,27 @@ public class SoundManager : MonoBehaviour {
         bgmAudio.Stop();
     }
 
+    public void SoundOn()
+    {
+        soundButton.SetActive(true);
+        muteButton.SetActive(false);
+
+        this.GetComponent<AudioSource>().mute = false;
+        this.bgmAudio.GetComponent<AudioSource>().mute = false;
+
+        SoundState = 0;
+        PlayerPrefs.SetInt("SOUND", SoundState);
+    }
+
+    public void SoundOff()
+    {
+        soundButton.SetActive(false);
+        muteButton.SetActive(true);
+
+        this.GetComponent<AudioSource>().mute = true;
+        this.bgmAudio.GetComponent<AudioSource>().mute = true;
+
+        SoundState = 1;
+        PlayerPrefs.SetInt("SOUND", SoundState);
+    }
 }

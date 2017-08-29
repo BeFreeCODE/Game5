@@ -42,7 +42,7 @@ public class TouchManager : MonoBehaviour
         if (GameManager.instance.curGameState == GameState.store
             || GameManager.instance.curGameState == GameState.store2)
             return;
-
+        
         cam.ZoomCamera(joyDrag);
         bloomCam.ZoomCamera(joyDrag);
 
@@ -67,56 +67,6 @@ public class TouchManager : MonoBehaviour
     //게임상태 터치조작
     private void OnTouch()
     {
-        #region 유니티에디터
-        //#if UNITY_EDITOR
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    if (GameManager.instance.curGameState == GameState.main)
-        //    {
-        //        GameManager.instance.StateTransition(GameState.game);
-        //    }
-        //    else if (GameManager.instance.curGameState == GameState.game)
-        //    {
-        //        Ray ray = subCam.ScreenPointToRay(Input.mousePosition);
-
-        //        RaycastHit hit;
-
-        //        if (Physics.Raycast(ray.origin, ray.direction * 10, out hit))
-        //        {
-        //            if (hit.collider.transform.tag.Equals("JoyStick"))
-        //            {
-        //                joyDrag = true;
-        //            }
-        //            else if (hit.collider.transform.tag.Equals("DirectionStick"))
-        //            {
-        //                dirDrag = true;
-        //            }
-        //        }
-        //    }
-        //}
-
-        //if (Input.GetMouseButton(0))
-        //{
-        //    if (joyDrag)
-        //    {
-        //        joyDragVec = subCam.ScreenToWorldPoint(Input.mousePosition);
-        //    }
-
-        //    if (dirDrag)
-        //    {
-        //        dirDragVec = subCam.ScreenToWorldPoint(Input.mousePosition);
-        //    }
-        //}
-
-        //if (Input.GetMouseButtonUp(0))
-        //{
-        //    joyDrag = false; dirDrag = false;
-        //    joyDragVec = startVec; dirDragVec = startVec2;
-        //    joyStick.transform.position = startVec;
-        //    dirStick.transform.position = startVec2;
-        //}
-        //#else
-        #endregion
         if (Input.touchCount > 0)
         {
             Touch[] _touch = Input.touches;
@@ -235,7 +185,6 @@ public class TouchManager : MonoBehaviour
             dirDragVec = startVec2;
             dirStick.transform.position = startVec2;
         }
-        //#endif
     }
 
     private void PlayerMove()
@@ -251,8 +200,6 @@ public class TouchManager : MonoBehaviour
             {
                 distance = 2;
                 joyStick.transform.position = joyDragVec + Vector3.forward * 9;
-                //joyStick.transform.position = ((joyDragVec + Vector3.forward * 9) - startVec).normalized * 2f
-                //                             + startVec;
             }
             else
             {

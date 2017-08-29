@@ -23,7 +23,7 @@ public class BulletManager : ObjectManager
     public List<GameObject[]> _objList = new List<GameObject[]>();
 
     public int typeNum = 0;
-    public float bulletScale = 1;
+    public float bulletScale;
 
     private void Awake()
     {
@@ -85,7 +85,7 @@ public class BulletManager : ObjectManager
     {
         //총알하나 불러와서
         GameObject fireBullet = GetObj();
-        fireBullet.transform.position = _pos;
+        fireBullet.transform.position = _pos + (player.fireDirection * .5f);
         fireBullet.transform.localScale = new Vector3(bulletScale, bulletScale, bulletScale);
         fireBullet.SetActive(true);
 

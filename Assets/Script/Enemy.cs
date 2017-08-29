@@ -16,13 +16,13 @@ public class Enemy : MonoBehaviour
     public EnemyType enemyType = EnemyType.normal;
 
     private float moveSpeed = 1.5f;
-    private float rotSpeed = 200f;
     public float distance = 0f;
 
     //Sprite Renderer
     public new SpriteRenderer renderer;
     public Sprite[] enemyImage = new Sprite[3];
     public Sprite[] bossImage = new Sprite[6];
+    public int bossImageNum;
 
     //Laser Pattern
     public Vector3 laserTarget;
@@ -38,11 +38,11 @@ public class Enemy : MonoBehaviour
     public float circleDelay;
     public float cx, cy;
 
-
     private Player player;
 
     //보스 체력
-    private int Life;
+    public int Life;
+    private int standardLife;
 
     public int tankerLife = 5;
     public int bossLife = 20;
@@ -54,6 +54,8 @@ public class Enemy : MonoBehaviour
     private GameObject damageLabel;
     [SerializeField]
     private GameObject getBox;
+    
+    public TrailRenderer trail;
 
     //Enemy활성화시
     private void OnEnable()
@@ -67,9 +69,32 @@ public class Enemy : MonoBehaviour
         laserDelay = 0f;
         circleTime = 0f;
 
-        if (this.enemyType == EnemyType.boss) { Life = bossLife + (1 * GameManager.instance.stageNum); }
-        else if (this.enemyType == EnemyType.tanker) { Life = tankerLife + (1 * GameManager.instance.stageNum); }
-        else { Life = normalLife + (1 * GameManager.instance.stageNum); }
+        if (this.enemyType == EnemyType.boss)
+        {
+            Life = bossLife * (1 + GameManager.instance.stageNum);
+            standardLife = Life;
+
+            EnemyManager.instance.bossCurLife = Life;
+            EnemyManager.instance.bossTotalLife = standardLife;
+        }
+        else if (this.enemyType == EnemyType.tanker)
+        {
+            Life = tankerLife * (1 + GameManager.instance.stageNum);
+        }
+        else
+        {
+            Life = normalLife * (1 + GameManager.instance.stageNum);
+        }
+
+        if (this.enemyType == EnemyType.laser
+            || this.enemyType == EnemyType.circle)
+        {
+            this.trail.enabled = true;
+        }
+        else
+        {
+            this.trail.enabled = false;
+        }
     }
 
     void Update()
@@ -83,7 +108,6 @@ public class Enemy : MonoBehaviour
         //레이저패턴
         if (this.enemyType == EnemyType.laser)
         {
-            this.transform.Rotate(new Vector3(0, 0, Time.deltaTime * rotSpeed));
             //조준
             if (!aming)
             {
@@ -107,14 +131,12 @@ public class Enemy : MonoBehaviour
         //원형 패턴
         else if (this.enemyType == EnemyType.circle)
         {
-            this.transform.Rotate(new Vector3(0, 0, Time.deltaTime * rotSpeed));
-
             circleTime += Time.deltaTime * 2;
 
             if (circleTime >= circleDelay)
             {
                 this.renderer.enabled = true;
-                this.transform.position += circleMoveVec.normalized * Time.deltaTime * moveSpeed    ;
+                this.transform.position += circleMoveVec.normalized * Time.deltaTime * moveSpeed;
             }
             else
             {
@@ -123,27 +145,32 @@ public class Enemy : MonoBehaviour
 
                 this.circleTarget = new Vector3(cx, cy, 0);
 
-                this.circleMoveVec = this.circleTarget - this.circleStandard;            
+                this.circleMoveVec = this.circleTarget - this.circleStandard;
             }
         }
         //보스패턴
         else if (this.enemyType == EnemyType.boss)
         {
+            //일시정지
+            if(GameManager.instance.pauseState)
+            {
+                this.moveSpeed = 0;
+            }
+            else
+            {
+                moveSpeed = 0.05f;
+            }
+
             //보스는 계속 이동
             this.transform.position = Vector3.MoveTowards(this.transform.position,
                                                             player.transform.position,
                                                             moveSpeed);
-
-            this.transform.Rotate(new Vector3(0, 0, 0.03f * rotSpeed));
-
-
         }
         else
         {
             this.transform.position = Vector3.MoveTowards(this.transform.position,
                                                   player.transform.position,
                                                   moveSpeed * Time.deltaTime);
-            this.transform.Rotate(new Vector3(0, 0, Time.deltaTime * rotSpeed));
         }
 
         if (this.gameObject.activeInHierarchy)
@@ -163,36 +190,36 @@ public class Enemy : MonoBehaviour
                 this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[0];
-                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2);
                 moveSpeed = 1.5f;
                 break;
             case EnemyType.speeder:
                 this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[1];
-                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2);
                 moveSpeed = 2.5f;
                 break;
             case EnemyType.tanker:
                 this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[2];
-                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2);
                 moveSpeed = 1.5f;
                 break;
             case EnemyType.laser:
                 this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[3];
-                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2);
                 moveSpeed = 15f;
 
                 if (GameManager.instance.stageNum >= 8)
@@ -204,9 +231,9 @@ public class Enemy : MonoBehaviour
                 this.renderer.gameObject.layer = 0;
                 this.GetComponent<BoxCollider>().size = new Vector3(.25f, .25f, .5f);
                 this.renderer.sprite = enemyImage[3];
-                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1,
-                                                        (GameManager.instance.stageNum * .25f) + 1);
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2,
+                                                        (GameManager.instance.stageNum * .25f) + 2);
                 moveSpeed = 7.5f;
 
                 if (GameManager.instance.stageNum >= 8)
@@ -217,11 +244,13 @@ public class Enemy : MonoBehaviour
             case EnemyType.boss:
                 this.renderer.gameObject.layer = 8;
                 this.GetComponent<BoxCollider>().size = new Vector3(1f, 1f, .5f);
-                this.renderer.sprite = bossImage[Random.Range(0, 6)];
-                this.transform.localScale = new Vector3(GameManager.instance.stageNum + 2, 
-                                                        GameManager.instance.stageNum + 2,
-                                                        GameManager.instance.stageNum + 2);
-                moveSpeed = 0.03f;
+                bossImageNum = Random.Range(0, 6);
+                this.renderer.sprite = bossImage[bossImageNum];
+                this.transform.localScale = new Vector3((GameManager.instance.stageNum  * .5f) + 2,
+                                                        (GameManager.instance.stageNum * .5f) + 2,
+                                                       (GameManager.instance.stageNum * .5f) + 2);
+                moveSpeed = 0.05f;
+
                 break;
         }
     }
@@ -338,6 +367,12 @@ public class Enemy : MonoBehaviour
             ShowDamage(other.GetComponent<Bullet>().bulletDamage, this.transform.position);
 
             DeadCheck();
+
+            if (this.enemyType == EnemyType.boss)
+            {
+                EnemyManager.instance.bossCurLife = Life;
+                EnemyManager.instance.bossTotalLife = standardLife;
+            }
         }
         else if (other.transform.tag.Equals("Warning"))
         {
@@ -349,7 +384,25 @@ public class Enemy : MonoBehaviour
             if (this.enemyType == EnemyType.laser)
                 return;
 
-            Life--;
+            Life -= other.GetComponent<Bullet>().bulletDamage;
+            
+            //데미지 표시
+            ShowDamage(other.GetComponent<Bullet>().bulletDamage, this.transform.position);
+
+            DeadCheck();
+
+            if (this.enemyType == EnemyType.boss)
+            {
+                EnemyManager.instance.bossCurLife = Life;
+                EnemyManager.instance.bossTotalLife = standardLife;
+            }
+        }
+        else if (other.transform.tag.Equals("Fever"))
+        {
+            Life = 0;
+
+            ShowDamage(999, this.transform.position);
+
             DeadCheck();
         }
     }

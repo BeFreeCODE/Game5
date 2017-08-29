@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    public Camera mainCam;
     public GameState curGameState = GameState.main;
 
     public JsonData jsonData;
@@ -33,6 +34,10 @@ public class GameManager : MonoBehaviour
     public int[] blueLevel = new int[7];
     public int[] greenLevel = new int[7];
 
+    public float starTime = 0f;
+    private float starDeleyTime = 1.5f;
+
+
     //스테이지
     public int stageNum = 0;
     public float stageCurTime = 0f;
@@ -40,10 +45,17 @@ public class GameManager : MonoBehaviour
 
     public bool enemyRend = false;
     private bool overState = false;
-
+    private bool starState = false;
+    
     [SerializeField]
     private GameObject quitPop;
+    [SerializeField]
+    private GameObject pausePop;
 
+    bool quitActive = false;
+    public bool pauseState = false;
+
+    public GameObject joyStick1, joyStick2;
 
     private void Awake()
     {
@@ -87,6 +99,8 @@ public class GameManager : MonoBehaviour
         //Player,CamInit
         player.InitPlayer();
 
+        stageNum = 0;
+        stageLimitTime = 30;
         overState = true;
     }
 
@@ -119,11 +133,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public bool quitActive = false;
 
     public void BackButton()
     {
-
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             switch (GameManager.instance.curGameState)
@@ -131,11 +143,28 @@ public class GameManager : MonoBehaviour
                 case GameState.main:
                     if (!quitActive)
                     {
+                        quitPop.GetComponent<TweenScale>().ResetToBeginning();
+                        quitPop.GetComponent<TweenScale>().Play();
+
                         quitPop.SetActive(true);
                         quitActive = true;
                     }
                     break;
                 case GameState.game:
+                    if (!pauseState)
+                    {
+                        joyStick1.SetActive(false);
+                        joyStick2.SetActive(false);
+
+                        SoundManager.instance.bgmAudio.Pause();
+                        Time.timeScale = 0f;
+                        pausePop.GetComponent<TweenScale>().ResetToBeginning();
+                        pausePop.GetComponent<TweenScale>().Play();
+
+                        pausePop.SetActive(true);
+
+                        pauseState = true;
+                    }
                     break;
                 case GameState.over:
                     break;
@@ -160,6 +189,17 @@ public class GameManager : MonoBehaviour
             quitActive = false;
         }
     }
+
+    public void ReplayButton()
+    {
+        joyStick1.SetActive(true);
+        joyStick2.SetActive(true);
+
+        SoundManager.instance.bgmAudio.Play();
+        pausePop.SetActive(false);
+        pauseState = false;
+    }
+
 
     private void Game()
     {

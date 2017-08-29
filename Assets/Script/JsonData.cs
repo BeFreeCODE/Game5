@@ -14,13 +14,23 @@ public class StatData
     public int fireSpeed;
 }
 
+[Serializable]
+public class StoreData
+{
+    public int level;
+    public int damagePrice;
+    public int moveSpeedPrice;
+    public int fireSpeedPrice;
+}
+
+
 public class JsonData : MonoBehaviour
 {
     string[] dataPath = new string[7];
     TextAsset[] androidPath = new TextAsset[7];
 
-    string allJson;
-    string _name;
+    string storeDataPath;
+    TextAsset andStoreDataPath;
 
     private void Awake()
     {
@@ -34,6 +44,7 @@ public class JsonData : MonoBehaviour
             androidPath[5] = Resources.Load("swordData") as TextAsset;
             androidPath[6] = Resources.Load("explosionData") as TextAsset;
 
+            andStoreDataPath = Resources.Load("StoreData") as TextAsset;
         }
         else if(Application.platform == RuntimePlatform.IPhonePlayer)
         {
@@ -48,6 +59,8 @@ public class JsonData : MonoBehaviour
             dataPath[4] = Application.dataPath + "/Resources/guidedData.json";
             dataPath[5] = Application.dataPath + "/Resources/swordData.json";
             dataPath[6] = Application.dataPath + "/Resources/explosionData.json";
+
+            storeDataPath = Application.dataPath + "/Resources/StoreData.json";
         }
     }
 
@@ -101,7 +114,39 @@ public class JsonData : MonoBehaviour
             statData = JsonHelper.FromJson<StatData>(json);
         }
 
-        return statData[level];
+        return statData[level];   
+    }
 
+    public StoreData LoadStoreData(int level)
+    {
+        string json;
+
+        StoreData[] storeData = null;
+
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            //path에 있는 파일을 json문자열에 저장
+            json = andStoreDataPath.ToString();
+            
+            //문자열을 json 형식으로 전환
+            storeData = JsonHelper.FromJson<StoreData>(json);
+        }
+        else if (Application.platform == RuntimePlatform.IPhonePlayer)
+        {
+            //path에 있는 파일을 json문자열에 저장
+            json = andStoreDataPath.ToString();
+
+            //문자열을 json 형식으로 전환
+            storeData = JsonHelper.FromJson<StoreData>(json);
+        }
+        else
+        {
+            json = File.ReadAllText(storeDataPath);
+
+            storeData = JsonHelper.FromJson<StoreData>(json);
+            
+        }
+
+        return storeData[level];
     }
 }
